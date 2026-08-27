@@ -188,6 +188,23 @@
                     </button>
                 </div>
 
+                <!-- HUD Filter & Sort Controls -->
+                <div class="hud-filter-bar">
+                    <div class="hud-search-box">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="channel-search-input" class="hud-search-input font-mono" placeholder="Search Channel / MAC..." oninput="handleSearch(this.value)">
+                    </div>
+                    <select id="sort-select" class="hud-select font-mono" onchange="handleSortChange(this.value)">
+                        <option value="id-asc">SORT: CH 01 → 08</option>
+                        <option value="id-desc">SORT: CH 08 → 01</option>
+                        <option value="temp-desc">TEMP: HIGH → LOW</option>
+                        <option value="temp-asc">TEMP: LOW → HIGH</option>
+                        <option value="hum-desc">HUMIDITY: HIGH → LOW</option>
+                        <option value="bat-asc">BATTERY: LOWEST</option>
+                        <option value="rssi-desc">SIGNAL: STRONGEST</option>
+                    </select>
+                </div>
+
                 <!-- Export Button -->
                 <button class="action-glow-btn font-mono" onclick="exportDataCSV()" title="Export Calibration Data to CSV">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -200,8 +217,8 @@
         <!-- VIEW 1: Precision Laboratory HUD Grid View -->
         <!-- ════════════════════════════════════════ -->
         <div class="view-panel active" id="panel-grid">
-            <div class="sensor-luxury-grid" id="sensor-luxury-grid">
-                <!-- Precision Cards injected via JavaScript -->
+            <div class="luxury-card-grid" id="sensor-luxury-grid">
+                <!-- 8 Sensor HUD Cards injected by JS -->
             </div>
         </div>
 
@@ -209,21 +226,13 @@
         <!-- VIEW 2: Interactive Spatial Chamber Heatmap -->
         <!-- ════════════════════════════════════════ -->
         <div class="view-panel" id="panel-map">
-            <div class="floorplan-container">
-                <div class="floorplan-header">
-                    <div class="floorplan-title">
-                        <h3>Spatial Facility Chamber Matrix</h3>
-                        <p class="font-mono">Real-time Bluetooth telemetry distribution across 8 physical monitoring zones</p>
-                    </div>
-                    <div class="floorplan-legend font-mono">
-                        <div class="legend-item"><span class="legend-dot cool"></span> &lt; 26.0°C CRYO</div>
-                        <div class="legend-item"><span class="legend-dot optimal"></span> 26.0 - 28.0°C NOMINAL</div>
-                        <div class="legend-item"><span class="legend-dot warm"></span> &gt; 28.0°C ELEVATED</div>
-                    </div>
+            <div class="spatial-floorplan-container">
+                <div class="floorplan-hud-header font-mono">
+                    <span>LABORATORY ARCHITECTURE // 8-CHAMBER MATRIX MAP</span>
+                    <span class="floorplan-legend"><span class="legend-dot cool"></span>CRYO &lt;26°C · <span class="legend-dot nominal"></span>NOMINAL · <span class="legend-dot warm"></span>ELEVATED &gt;28°C</span>
                 </div>
-
                 <div class="floorplan-canvas" id="floorplan-canvas">
-                    <!-- Dynamic Spatial Zones injected by JS -->
+                    <!-- 8 Spatial nodes injected by JS -->
                 </div>
             </div>
         </div>
@@ -232,40 +241,40 @@
         <!-- VIEW 3: Master Analytics Spectrum Chart -->
         <!-- ════════════════════════════════════════ -->
         <div class="view-panel" id="panel-analytics">
-            <div class="analytics-card">
-                <div class="analytics-top">
+            <div class="analytics-container">
+                <div class="analytics-hud-header">
                     <div>
-                        <h3>Multi-Channel Thermal Spectrum (24h)</h3>
-                        <p class="font-mono">Concurrent comparative timeline across all 8 environmental probe channels</p>
+                        <h3 class="font-mono">MULTI-CHANNEL THERMAL SPECTRUM</h3>
+                        <p class="font-mono" style="color:var(--text-muted); font-size:0.75rem">Synchronized 24-hour comparative temperature timeline across all 8 channels</p>
                     </div>
-                    <div class="chart-filter-toggles" id="chart-sensor-toggles">
-                        <!-- Sensor toggle pills -->
+                    <div class="chart-sensor-toggles" id="chart-sensor-toggles">
+                        <!-- Sensor toggle chips injected by JS -->
                     </div>
                 </div>
-                <div class="master-chart-wrapper">
+                <div class="master-chart-wrap">
                     <canvas id="master-comparison-chart"></canvas>
                 </div>
             </div>
         </div>
 
         <!-- ════════════════════════════════════════ -->
-        <!-- VIEW 4: Compact Data Sheet (Table View) -->
+        <!-- VIEW 4: Precision Data Sheet (Table View) -->
         <!-- ════════════════════════════════════════ -->
         <div class="view-panel" id="panel-table">
             <div class="table-container">
-                <table class="luxury-table" id="luxury-table">
+                <table class="luxury-table">
                     <thead>
                         <tr class="font-mono">
                             <th>CHANNEL</th>
                             <th>IDENTIFIER / MAC</th>
-                            <th>STATUS</th>
+                            <th>BUS STATE</th>
                             <th>TEMPERATURE</th>
                             <th>HUMIDITY</th>
                             <th>TOLERANCE</th>
-                            <th>POWER</th>
-                            <th>RF SIGNAL</th>
+                            <th>BATTERY</th>
+                            <th>RSSI</th>
                             <th>PACKETS</th>
-                            <th>LAST ADVERT</th>
+                            <th>LAST SEEN</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -302,6 +311,19 @@
                 </div>
             </div>
 
+            <!-- Channel Custom Label & Zone In-Place Editor -->
+            <div class="modal-alias-editor">
+                <div class="alias-input-wrap">
+                    <label class="font-mono">CUSTOM ALIAS & CHAMBER LABEL</label>
+                    <div class="alias-field-row">
+                        <input type="text" id="modal-edit-name" class="alias-input font-mono" placeholder="e.g. Server Rack A">
+                        <input type="text" id="modal-edit-zone" class="alias-input zone font-mono" placeholder="e.g. CHAMBER 01">
+                        <button class="alias-save-btn font-mono" onclick="saveActiveSensorAlias()">SAVE</button>
+                        <button class="alias-reset-btn font-mono" onclick="resetActiveSensorAlias()" title="Reset to default">↺</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Big Metric Cards Row -->
             <div class="modal-metrics-quad">
                 <div class="modal-quad-card temp">
@@ -324,6 +346,14 @@
                     <div class="quad-val font-mono" id="modal-metric-rssi">-52 dBm</div>
                     <div class="quad-sub font-mono" id="modal-sub-rssi">Link Quality: 96%</div>
                 </div>
+            </div>
+
+            <!-- 24H Statistical Insights Quad -->
+            <div class="modal-stats-insights font-mono">
+                <div class="stat-pill"><span class="stat-lbl">PEAK (24H):</span> <strong id="stat-peak-temp">28.50°C</strong></div>
+                <div class="stat-pill"><span class="stat-lbl">MIN (24H):</span> <strong id="stat-min-temp">25.10°C</strong></div>
+                <div class="stat-pill"><span class="stat-lbl">AVG (24H):</span> <strong id="stat-avg-temp">27.20°C</strong></div>
+                <div class="stat-pill"><span class="stat-lbl">VARIANCE:</span> <strong id="stat-var-temp">±0.35°C</strong></div>
             </div>
 
             <!-- Modal Analytics Charts -->
@@ -487,6 +517,34 @@
                 <button class="btn-luxury-secondary font-mono" id="btn-disconnect" onclick="handleDisconnect()" disabled>
                     <span>DISCONNECT</span>
                 </button>
+            </div>
+
+            <!-- Radar Background Optics -->
+            <div class="drawer-section">
+                <label class="drawer-section-label font-mono">RADAR BACKGROUND OPTICS</label>
+                <div class="radar-slider-group">
+                    <div class="radar-slider-row">
+                        <div class="radar-slider-header font-mono">
+                            <span>OPACITY</span>
+                            <strong id="radar-val-opacity">55%</strong>
+                        </div>
+                        <input type="range" id="radar-slider-opacity" min="0" max="100" value="55" oninput="handleRadarParamChange('opacity', this.value)">
+                    </div>
+                    <div class="radar-slider-row">
+                        <div class="radar-slider-header font-mono">
+                            <span>SWEEP SPEED</span>
+                            <strong id="radar-val-speed">1.0x</strong>
+                        </div>
+                        <input type="range" id="radar-slider-speed" min="20" max="250" value="100" oninput="handleRadarParamChange('speed', this.value)">
+                    </div>
+                    <div class="radar-slider-row">
+                        <div class="radar-slider-header font-mono">
+                            <span>SCALE / ZOOM</span>
+                            <strong id="radar-val-scale">1.0x</strong>
+                        </div>
+                        <input type="range" id="radar-slider-scale" min="30" max="120" value="60" oninput="handleRadarParamChange('scale', this.value)">
+                    </div>
+                </div>
             </div>
 
             <!-- Live MQTT Stream Log -->

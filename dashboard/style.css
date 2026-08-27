@@ -1697,6 +1697,266 @@ body::before {
     font-size: 1rem;
     cursor: pointer;
     margin-left: 6px;
+/* ═══════════════════════════════════════
+   HUD Filter & Sort Toolbar
+   ═══════════════════════════════════════ */
+.hud-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hud-search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(10, 15, 27, 0.85);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 0 10px;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.hud-search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    color: var(--accent);
+}
+
+.hud-search-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: 0.72rem;
+    padding: 6px 0;
+    width: 140px;
+}
+
+.hud-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.hud-select {
+    background: rgba(10, 15, 27, 0.85);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: var(--radius-xs);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.hud-select:hover, .hud-select:focus {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════
+   10-Segment Calibrated LED Thermal Range Bar
+   ═══════════════════════════════════════ */
+.card-led-range-bar {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.led-seg {
+    flex: 1;
+    height: 3.5px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 1px;
+    transition: all 0.3s ease;
+}
+
+.led-seg.active-cool {
+    background: #00e5ff;
+    box-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+}
+
+.led-seg.active-nominal {
+    background: #00f59b;
+    box-shadow: 0 0 6px rgba(0, 245, 155, 0.6);
+}
+
+.led-seg.active-warm {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}
+
+.led-seg.active-hot {
+    background: #f43f5e;
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.8);
+}
+
+/* ═══════════════════════════════════════
+   Real-Time Packet Glimmer Glow Animation
+   ═══════════════════════════════════════ */
+@keyframes packetGlimmerAnim {
+    0% {
+        border-color: var(--accent);
+        box-shadow: 0 0 16px var(--accent-glow), inset 0 0 12px var(--accent-glow);
+    }
+    100% {
+        border-color: var(--border-subtle);
+        box-shadow: none;
+    }
+}
+
+.luxury-card.packet-glimmer {
+    animation: packetGlimmerAnim 0.45s ease-out;
+}
+
+/* ═══════════════════════════════════════
+   Modal Alias Editor & Statistical Insights
+   ═══════════════════════════════════════ */
+.modal-alias-editor {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+
+.alias-input-wrap label {
+    display: block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+}
+
+.alias-field-row {
+    display: flex;
+    gap: 8px;
+}
+
+.alias-input {
+    flex: 2;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.alias-input.zone {
+    flex: 1.2;
+}
+
+.alias-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.alias-save-btn {
+    background: var(--accent);
+    color: #060911;
+    border: none;
+    border-radius: var(--radius-xs);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alias-save-btn:hover {
+    box-shadow: 0 0 10px var(--accent-glow);
+    transform: translateY(-1px);
+}
+
+.alias-reset-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    font-size: 0.85rem;
+    padding: 0 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alias-reset-btn:hover {
+    color: var(--text-primary);
+    border-color: var(--border-highlight);
+}
+
+.modal-stats-insights {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.stat-pill {
+    background: rgba(10, 15, 27, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 8px 10px;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-lbl {
+    font-size: 0.58rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.stat-pill strong {
+    color: var(--text-primary);
+    font-size: 0.88rem;
+}
+
+/* ═══════════════════════════════════════
+   Radar Background Sliders in Drawer
+   ═══════════════════════════════════════ */
+.radar-slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    padding: 12px;
+}
+
+.radar-slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.radar-slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--text-secondary);
+}
+
+.radar-slider-header strong {
+    color: var(--accent);
+}
+
+.radar-slider-row input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
 }
 
 /* ═══════════════════════════════════════
@@ -1718,6 +1978,13 @@ body::before {
     .floorplan-canvas {
         grid-template-columns: repeat(2, 1fr);
         grid-template-rows: repeat(4, 160px);
+    }
+    .hud-filter-bar {
+        width: 100%;
+        margin-top: 8px;
+    }
+    .hud-search-input {
+        width: 100%;
     }
 }
 
@@ -1744,7 +2011,11 @@ body::before {
     .modal-metrics-quad {
         grid-template-columns: repeat(2, 1fr);
     }
+    .modal-stats-insights {
+        grid-template-columns: repeat(2, 1fr);
+    }
     .modal-charts-grid {
         grid-template-columns: 1fr;
     }
 }
+

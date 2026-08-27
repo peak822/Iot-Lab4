@@ -1,6 +1,7 @@
 /* ══════════════════════════════════════════════════════════
    KC868-A6 Precision Laboratory Telemetry Matrix — Application Logic
-   Clean Minimalist Laboratory HUD, WebGL Radar Engine (React Bits Spec), Micro-SFX
+   Clean Minimalist Laboratory HUD, WebGL Radar Engine (React Bits Spec),
+   Custom Channel Aliasing, 10-Segment LED Scale, Real-Time Glimmer, Filter/Sort
    ══════════════════════════════════════════════════════════ */
 
 // ═══════════════════════════════════════
@@ -11,6 +12,8 @@ const STORAGE_SETTINGS_KEY = 'kc868_luxury_settings_v3';
 const STORAGE_THEME_KEY = 'kc868_luxury_theme';
 const STORAGE_SOUND_KEY = 'kc868_luxury_sound';
 const STORAGE_SIM_KEY = 'kc868_sim_enabled';
+const STORAGE_ALIASES_KEY = 'kc868_channel_aliases_v1';
+const STORAGE_RADAR_KEY = 'kc868_radar_settings_v1';
 
 const MAX_HISTORY = 96; // 48h at 30-min resolution
 const SENSOR_TIMEOUT_MS = 180000; // 3 minutes timeout
@@ -32,19 +35,24 @@ const SVG_ICONS = {
 
 // 8 Sensor Definitions with Hardware Channel Identifiers
 const SENSOR_CONFIG = [
-    { id: 1, name: 'CHANNEL // 01', zone: 'CHAMBER 01', mac: 'A4:C1:38:00:00:01', model: 'LYWSD03MMC', baseTemp: 27.3, baseHum: 61.2, baseBat: 94, baseRssi: -52, color: '#38bdf8' },
-    { id: 2, name: 'CHANNEL // 02', zone: 'CHAMBER 02', mac: 'A4:C1:38:00:00:02', model: 'LYWSD03MMC', baseTemp: 26.8, baseHum: 59.4, baseBat: 88, baseRssi: -55, color: '#818cf8' },
-    { id: 3, name: 'CHANNEL // 03', zone: 'CHAMBER 03', mac: 'A4:C1:38:00:00:03', model: 'LYWSD03MMC', baseTemp: 28.1, baseHum: 64.0, baseBat: 91, baseRssi: -48, color: '#c084fc' },
-    { id: 4, name: 'CHANNEL // 04', zone: 'CHAMBER 04', mac: 'A4:C1:38:00:00:04', model: 'LYWSD03MMC', baseTemp: 27.7, baseHum: 60.5, baseBat: 85, baseRssi: -61, color: '#f472b6' },
-    { id: 5, name: 'CHANNEL // 05', zone: 'CHAMBER 05', mac: 'A4:C1:38:00:00:05', model: 'LYWSD03MMC', baseTemp: 27.0, baseHum: 63.1, baseBat: 90, baseRssi: -57, color: '#34d399' },
-    { id: 6, name: 'CHANNEL // 06', zone: 'CHAMBER 06', mac: 'A4:C1:38:00:00:06', model: 'LYWSD03MMC', baseTemp: 28.5, baseHum: 65.2, baseBat: 77, baseRssi: -63, color: '#fbbf24' },
-    { id: 7, name: 'CHANNEL // 07', zone: 'CHAMBER 07', mac: 'A4:C1:38:00:00:07', model: 'LYWSD03MMC', baseTemp: 26.9, baseHum: 58.0, baseBat: 79, baseRssi: -50, color: '#2dd4bf' },
-    { id: 8, name: 'CHANNEL // 08', zone: 'CHAMBER 08', mac: 'A4:C1:38:00:00:08', model: 'LYWSD03MMC', baseTemp: 27.8, baseHum: 62.4, baseBat: 81, baseRssi: -58, color: '#fb923c' }
+    { id: 1, defaultName: 'CHANNEL // 01', defaultZone: 'CHAMBER 01', mac: 'A4:C1:38:00:00:01', model: 'LYWSD03MMC', baseTemp: 27.3, baseHum: 61.2, baseBat: 94, baseRssi: -52, color: '#38bdf8' },
+    { id: 2, defaultName: 'CHANNEL // 02', defaultZone: 'CHAMBER 02', mac: 'A4:C1:38:00:00:02', model: 'LYWSD03MMC', baseTemp: 26.8, baseHum: 59.4, baseBat: 88, baseRssi: -55, color: '#818cf8' },
+    { id: 3, defaultName: 'CHANNEL // 03', defaultZone: 'CHAMBER 03', mac: 'A4:C1:38:00:00:03', model: 'LYWSD03MMC', baseTemp: 28.1, baseHum: 64.0, baseBat: 91, baseRssi: -48, color: '#c084fc' },
+    { id: 4, defaultName: 'CHANNEL // 04', defaultZone: 'CHAMBER 04', mac: 'A4:C1:38:00:00:04', model: 'LYWSD03MMC', baseTemp: 27.7, baseHum: 60.5, baseBat: 85, baseRssi: -61, color: '#f472b6' },
+    { id: 5, defaultName: 'CHANNEL // 05', defaultZone: 'CHAMBER 05', mac: 'A4:C1:38:00:00:05', model: 'LYWSD03MMC', baseTemp: 27.0, baseHum: 63.1, baseBat: 90, baseRssi: -57, color: '#34d399' },
+    { id: 6, defaultName: 'CHANNEL // 06', defaultZone: 'CHAMBER 06', mac: 'A4:C1:38:00:00:06', model: 'LYWSD03MMC', baseTemp: 28.5, baseHum: 65.2, baseBat: 77, baseRssi: -63, color: '#fbbf24' },
+    { id: 7, defaultName: 'CHANNEL // 07', defaultZone: 'CHAMBER 07', mac: 'A4:C1:38:00:00:07', model: 'LYWSD03MMC', baseTemp: 26.9, baseHum: 58.0, baseBat: 79, baseRssi: -50, color: '#2dd4bf' },
+    { id: 8, defaultName: 'CHANNEL // 08', defaultZone: 'CHAMBER 08', mac: 'A4:C1:38:00:00:08', model: 'LYWSD03MMC', baseTemp: 27.8, baseHum: 62.4, baseBat: 81, baseRssi: -58, color: '#fb923c' }
 ];
 
 // App State
 let simulationEnabled = true;
 let sensorData = [];
+let channelAliases = {};
+let radarSettings = { opacity: 55, speed: 100, scale: 60 };
+
+let currentSortMode = 'id-asc';
+let currentSearchQuery = '';
 
 let mqttCount = 0;
 let uptimeSeconds = 3 * 3600 + 45 * 60;
@@ -197,7 +205,7 @@ function initRadarBackground() {
 
     gl.useProgram(radarProgram);
 
-    // Quad geometry (Full screen)
+    // Quad geometry
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -213,7 +221,7 @@ function initRadarBackground() {
     gl.enableVertexAttribArray(posAttr);
     gl.vertexAttribPointer(posAttr, 2, gl.FLOAT, false, 0, 0);
 
-    // Get Uniform Locations
+    // Uniform Locations
     const uniformNames = [
         'uTime', 'uResolution', 'uSpeed', 'uScale', 'uRingCount', 'uSpokeCount',
         'uRingThickness', 'uSpokeThickness', 'uSweepSpeed', 'uSweepWidth',
@@ -225,11 +233,14 @@ function initRadarBackground() {
         radarUniforms[name] = gl.getUniformLocation(radarProgram, name);
     });
 
-    // Set Initial Static / Default Uniforms
-    gl.uniform1f(radarUniforms.uSpeed, 0.9);
-    gl.uniform1f(radarUniforms.uScale, 0.60);
-    gl.uniform1f(radarUniforms.uRingCount, 8.0); // 8 concentric channels
-    gl.uniform1f(radarUniforms.uSpokeCount, 8.0); // 8 radial telemetry spokes
+    // Default Uniforms with Radar Settings
+    const speedMult = radarSettings.speed / 100;
+    const scaleVal = radarSettings.scale / 100;
+
+    gl.uniform1f(radarUniforms.uSpeed, 0.9 * speedMult);
+    gl.uniform1f(radarUniforms.uScale, scaleVal);
+    gl.uniform1f(radarUniforms.uRingCount, 8.0);
+    gl.uniform1f(radarUniforms.uSpokeCount, 8.0);
     gl.uniform1f(radarUniforms.uRingThickness, 0.032);
     gl.uniform1f(radarUniforms.uSpokeThickness, 0.012);
     gl.uniform1f(radarUniforms.uSweepSpeed, 0.85);
@@ -241,10 +252,12 @@ function initRadarBackground() {
     gl.uniform1f(radarUniforms.uMouseInfluence, 0.09);
     gl.uniform1f(radarUniforms.uEnableMouse, 1.0);
 
-    // Set initial theme color
+    // Initial theme color
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'cyan';
     const c = RADAR_THEME_COLORS[currentTheme] || RADAR_THEME_COLORS.cyan;
     gl.uniform3f(radarUniforms.uColor, c[0], c[1], c[2]);
+
+    applyRadarDomStyles();
 
     function resizeRadar() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -262,7 +275,6 @@ function initRadarBackground() {
     window.addEventListener('resize', resizeRadar);
     resizeRadar();
 
-    // Mouse Interaction
     window.addEventListener('mousemove', (e) => {
         radarTargetMouse = [
             e.clientX / window.innerWidth,
@@ -270,7 +282,6 @@ function initRadarBackground() {
         ];
     });
 
-    // Render Loop
     function renderRadar(now) {
         radarAnimationId = requestAnimationFrame(renderRadar);
 
@@ -296,29 +307,174 @@ function updateRadarThemeColor(theme) {
     radarGl.uniform3f(radarUniforms.uColor, c[0], c[1], c[2]);
 }
 
+function handleRadarParamChange(param, val) {
+    val = parseInt(val, 10);
+    radarSettings[param] = val;
+    localStorage.setItem(STORAGE_RADAR_KEY, JSON.stringify(radarSettings));
+
+    applyRadarDomStyles();
+
+    if (!radarGl || !radarProgram) return;
+    radarGl.useProgram(radarProgram);
+
+    if (param === 'speed' && radarUniforms.uSpeed) {
+        radarGl.uniform1f(radarUniforms.uSpeed, 0.9 * (val / 100));
+    } else if (param === 'scale' && radarUniforms.uScale) {
+        radarGl.uniform1f(radarUniforms.uScale, val / 100);
+    }
+}
+
+function applyRadarDomStyles() {
+    const canvas = document.getElementById('radar-canvas');
+    if (canvas) {
+        canvas.style.opacity = (radarSettings.opacity / 100).toFixed(2);
+    }
+    const opVal = document.getElementById('radar-val-opacity');
+    const spVal = document.getElementById('radar-val-speed');
+    const scVal = document.getElementById('radar-val-scale');
+
+    if (opVal) opVal.textContent = `${radarSettings.opacity}%`;
+    if (spVal) spVal.textContent = `${(radarSettings.speed / 100).toFixed(1)}x`;
+    if (scVal) scVal.textContent = `${(radarSettings.scale / 100).toFixed(1)}x`;
+
+    const opSlider = document.getElementById('radar-slider-opacity');
+    const spSlider = document.getElementById('radar-slider-speed');
+    const scSlider = document.getElementById('radar-slider-scale');
+
+    if (opSlider) opSlider.value = radarSettings.opacity;
+    if (spSlider) spSlider.value = radarSettings.speed;
+    if (scSlider) scSlider.value = radarSettings.scale;
+}
+
+// ═══════════════════════════════════════
+// Sensor Aliasing & Name Customization
+// ═══════════════════════════════════════
+
+function loadAliases() {
+    try {
+        const raw = localStorage.getItem(STORAGE_ALIASES_KEY);
+        if (raw) channelAliases = JSON.parse(raw);
+    } catch (e) {
+        channelAliases = {};
+    }
+}
+
+function saveActiveSensorAlias() {
+    if (activeModalSensorId === null) return;
+    const nameInput = document.getElementById('modal-edit-name');
+    const zoneInput = document.getElementById('modal-edit-zone');
+    if (!nameInput || !zoneInput) return;
+
+    const sensor = sensorData.find(s => s.id === activeModalSensorId);
+    if (!sensor) return;
+
+    const newName = nameInput.value.trim() || sensor.defaultName;
+    const newZone = zoneInput.value.trim().toUpperCase() || sensor.defaultZone;
+
+    sensor.name = newName;
+    sensor.zone = newZone;
+
+    channelAliases[sensor.id] = { name: newName, zone: newZone };
+    localStorage.setItem(STORAGE_ALIASES_KEY, JSON.stringify(channelAliases));
+
+    playSfx('connect');
+    updateModalDOM(sensor);
+    renderAllCards();
+    if (currentViewMode === 'map') renderSpatialMap();
+    else if (currentViewMode === 'table') renderDataTable();
+    else if (currentViewMode === 'analytics') renderMasterAnalyticsChart();
+}
+
+function resetActiveSensorAlias() {
+    if (activeModalSensorId === null) return;
+    const sensor = sensorData.find(s => s.id === activeModalSensorId);
+    if (!sensor) return;
+
+    sensor.name = sensor.defaultName;
+    sensor.zone = sensor.defaultZone;
+
+    delete channelAliases[sensor.id];
+    localStorage.setItem(STORAGE_ALIASES_KEY, JSON.stringify(channelAliases));
+
+    playSfx('click');
+    updateModalDOM(sensor);
+    renderAllCards();
+    if (currentViewMode === 'map') renderSpatialMap();
+    else if (currentViewMode === 'table') renderDataTable();
+    else if (currentViewMode === 'analytics') renderMasterAnalyticsChart();
+}
+
 // ═══════════════════════════════════════
 // Initialization of Sensor Data
 // ═══════════════════════════════════════
 
 function initSensorData(withSimData = true) {
-    sensorData = SENSOR_CONFIG.map(cfg => ({
-        ...cfg,
-        temperature: withSimData ? cfg.baseTemp : null,
-        humidity: withSimData ? cfg.baseHum : null,
-        battery: withSimData ? cfg.baseBat : null,
-        rssi: withSimData ? cfg.baseRssi : null,
-        online: withSimData,
-        hasReceivedRealData: false,
-        packetCount: withSimData ? 12 : 0,
-        lastUpdate: withSimData ? new Date() : null,
-        visibleInMasterChart: true,
-        history: {
-            temp: withSimData ? generateHistory(cfg.baseTemp, 1.4, 48) : [],
-            hum: withSimData ? generateHistory(cfg.baseHum, 2.5, 48) : [],
-            rssi: withSimData ? generateHistory(cfg.baseRssi, 4, 48) : [],
-            bat: withSimData ? generateBatteryHistory(cfg.baseBat, 48) : []
+    sensorData = SENSOR_CONFIG.map(cfg => {
+        const alias = channelAliases[cfg.id] || {};
+        return {
+            ...cfg,
+            name: alias.name || cfg.defaultName,
+            zone: alias.zone || cfg.defaultZone,
+            temperature: withSimData ? cfg.baseTemp : null,
+            humidity: withSimData ? cfg.baseHum : null,
+            battery: withSimData ? cfg.baseBat : null,
+            rssi: withSimData ? cfg.baseRssi : null,
+            online: withSimData,
+            hasReceivedRealData: false,
+            packetCount: withSimData ? 12 : 0,
+            lastUpdate: withSimData ? new Date() : null,
+            visibleInMasterChart: true,
+            history: {
+                temp: withSimData ? generateHistory(cfg.baseTemp, 1.4, 48) : [],
+                hum: withSimData ? generateHistory(cfg.baseHum, 2.5, 48) : [],
+                rssi: withSimData ? generateHistory(cfg.baseRssi, 4, 48) : [],
+                bat: withSimData ? generateBatteryHistory(cfg.baseBat, 48) : []
+            }
+        };
+    });
+}
+
+// ═══════════════════════════════════════
+// Sorting & Filtering Engine
+// ═══════════════════════════════════════
+
+function handleSortChange(sortVal) {
+    currentSortMode = sortVal;
+    playSfx('click');
+    renderAllCards();
+    if (currentViewMode === 'table') renderDataTable();
+}
+
+function handleSearch(query) {
+    currentSearchQuery = query.trim().toLowerCase();
+    renderAllCards();
+    if (currentViewMode === 'table') renderDataTable();
+}
+
+function getFilteredAndSortedSensors() {
+    let list = sensorData.filter(s => {
+        if (!currentSearchQuery) return true;
+        const matchName = s.name.toLowerCase().includes(currentSearchQuery);
+        const matchZone = s.zone.toLowerCase().includes(currentSearchQuery);
+        const matchMac = s.mac.toLowerCase().includes(currentSearchQuery);
+        const matchId = `ch${s.id}`.includes(currentSearchQuery) || `${s.id}` === currentSearchQuery;
+        return matchName || matchZone || matchMac || matchId;
+    });
+
+    list.sort((a, b) => {
+        switch (currentSortMode) {
+            case 'id-asc': return a.id - b.id;
+            case 'id-desc': return b.id - a.id;
+            case 'temp-desc': return (b.temperature ?? -999) - (a.temperature ?? -999);
+            case 'temp-asc': return (a.temperature ?? 999) - (b.temperature ?? 999);
+            case 'hum-desc': return (b.humidity ?? -999) - (a.humidity ?? -999);
+            case 'bat-asc': return (a.battery ?? 999) - (b.battery ?? 999);
+            case 'rssi-desc': return (b.rssi ?? -999) - (a.rssi ?? -999);
+            default: return a.id - b.id;
         }
-    }));
+    });
+
+    return list;
 }
 
 // ═══════════════════════════════════════
@@ -531,6 +687,33 @@ function calculateDewPoint(temp, hum) {
     return ((b * alpha) / (a - alpha)).toFixed(1);
 }
 
+function calculateLedSegments(temp) {
+    if (temp === null) return { count: 0, type: 'cool' };
+    // 20°C to 35°C mapped to 1..10
+    const ratio = Math.max(0, Math.min(1, (temp - 20) / 15));
+    const count = Math.max(1, Math.round(ratio * 10));
+    const type = temp > 30 ? 'hot' : temp > 28 ? 'warm' : temp < 25 ? 'cool' : 'nominal';
+    return { count, type };
+}
+
+function calculateStats(history) {
+    if (!history || history.length === 0) {
+        return { peak: '--', min: '--', avg: '--', variance: '--' };
+    }
+    const max = Math.max(...history);
+    const min = Math.min(...history);
+    const avg = history.reduce((a, b) => a + b, 0) / history.length;
+    const sqDiffs = history.map(v => Math.pow(v - avg, 2));
+    const variance = Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / history.length);
+
+    return {
+        peak: `${max.toFixed(2)}°C`,
+        min: `${min.toFixed(2)}°C`,
+        avg: `${avg.toFixed(2)}°C`,
+        variance: `±${variance.toFixed(2)}°C`
+    };
+}
+
 // ═══════════════════════════════════════
 // View Navigation (Grid / Map / Analytics / Table)
 // ═══════════════════════════════════════
@@ -578,6 +761,14 @@ function createLuxuryCard(sensor) {
 
     const subtitle = `MAC: ${sensor.mac}`;
 
+    const ledData = calculateLedSegments(sensor.temperature);
+    let ledHtml = '';
+    for (let i = 1; i <= 10; i++) {
+        const isActive = sensor.online && i <= ledData.count;
+        const cls = isActive ? `led-seg active-${ledData.type}` : 'led-seg';
+        ledHtml += `<span class="${cls}" data-level="${i}"></span>`;
+    }
+
     card.innerHTML = `
         <div class="card-head">
             <div class="card-node-info">
@@ -619,6 +810,11 @@ function createLuxuryCard(sensor) {
             </div>
             <canvas class="card-sparkline-canvas" id="spark-${sensor.id}"></canvas>
         </div>
+
+        <!-- 10-Segment Calibrated LED Scale -->
+        <div class="card-led-range-bar" id="card-led-bar-${sensor.id}" title="Thermal Scale: 20°C - 35°C">
+            ${ledHtml}
+        </div>
     `;
 
     // 3D Tilt Interaction
@@ -645,10 +841,11 @@ function renderAllCards() {
     const grid = document.getElementById('sensor-luxury-grid');
     if (!grid) return;
     grid.innerHTML = '';
-    sensorData.forEach(sensor => {
+    const visibleSensors = getFilteredAndSortedSensors();
+    visibleSensors.forEach(sensor => {
         grid.appendChild(createLuxuryCard(sensor));
     });
-    sensorData.forEach(sensor => drawSparkline(sensor));
+    visibleSensors.forEach(sensor => drawSparkline(sensor));
 }
 
 function drawSparkline(sensor) {
@@ -808,7 +1005,9 @@ function renderDataTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
 
-    sensorData.forEach(s => {
+    const visibleSensors = getFilteredAndSortedSensors();
+
+    visibleSensors.forEach(s => {
         const comfort = calculateComfort(s.temperature, s.humidity);
         const tr = document.createElement('tr');
         tr.onclick = () => openModal(s.id);
@@ -852,6 +1051,12 @@ function openModal(sensorId) {
     document.getElementById('modal-chip-id').textContent = `CHANNEL #${sensor.id.toString().padStart(2, '0')}`;
     document.getElementById('modal-chip-model').textContent = sensor.model;
 
+    // Load inputs for in-place alias editing
+    const nameInput = document.getElementById('modal-edit-name');
+    const zoneInput = document.getElementById('modal-edit-zone');
+    if (nameInput) nameInput.value = sensor.name;
+    if (zoneInput) zoneInput.value = sensor.zone;
+
     updateModalDOM(sensor);
     renderModalCharts(sensor);
 
@@ -871,6 +1076,7 @@ function updateModalDOM(sensor) {
     const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
     const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
 
+    document.getElementById('modal-sensor-name').textContent = `${sensor.name} // ${sensor.zone}`;
     document.getElementById('modal-metric-temp').textContent = tempStr;
     document.getElementById('modal-sub-temp').textContent = dewPoint !== '--' ? `Dew Point: ${dewPoint}°C` : 'Dew Point: --';
     document.getElementById('badge-modal-temp-val').textContent = tempStr;
@@ -883,6 +1089,18 @@ function updateModalDOM(sensor) {
 
     document.getElementById('modal-metric-rssi').textContent = rssiStr;
     document.getElementById('badge-modal-rssi-val').textContent = rssiStr;
+
+    // 24H Statistical Insights
+    const stats = calculateStats(sensor.history.temp);
+    const peakEl = document.getElementById('stat-peak-temp');
+    const minEl = document.getElementById('stat-min-temp');
+    const avgEl = document.getElementById('stat-avg-temp');
+    const varEl = document.getElementById('stat-var-temp');
+
+    if (peakEl) peakEl.textContent = stats.peak;
+    if (minEl) minEl.textContent = stats.min;
+    if (avgEl) avgEl.textContent = stats.avg;
+    if (varEl) varEl.textContent = stats.variance;
 
     const statusBadge = document.getElementById('modal-status-badge');
     if (sensor.online) {
@@ -1452,6 +1670,7 @@ function updateCardDOM(sensor, prevTemp) {
     const rssiEl = document.getElementById(`card-rssi-${sensor.id}`);
     const comfortEl = document.getElementById(`card-comfort-${sensor.id}`);
     const gaugeBar = document.getElementById(`gauge-bar-${sensor.id}`);
+    const ledBar = document.getElementById(`card-led-bar-${sensor.id}`);
 
     const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(1)}°C` : '--°C';
     const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(1)}%` : '--%';
@@ -1479,6 +1698,25 @@ function updateCardDOM(sensor, prevTemp) {
         const comfort = calculateComfort(sensor.temperature, sensor.humidity);
         comfortEl.className = `card-comfort-badge font-mono ${!sensor.online ? 'offline' : comfort.class}`;
         comfortEl.textContent = !sensor.online ? 'OFFLINE' : comfort.text;
+    }
+
+    // Update 10-Segment Range Bar
+    if (ledBar) {
+        const ledData = calculateLedSegments(sensor.temperature);
+        const segs = ledBar.querySelectorAll('.led-seg');
+        segs.forEach((seg, idx) => {
+            const level = idx + 1;
+            const isActive = sensor.online && level <= ledData.count;
+            seg.className = isActive ? `led-seg active-${ledData.type}` : 'led-seg';
+        });
+    }
+
+    // Real-Time Packet Glimmer Glow
+    const cardEl = document.querySelector(`.luxury-card[data-id="${sensor.id}"]`);
+    if (cardEl) {
+        cardEl.classList.remove('packet-glimmer');
+        void cardEl.offsetWidth;
+        cardEl.classList.add('packet-glimmer');
     }
 
     drawSparkline(sensor);
@@ -1529,10 +1767,11 @@ function updateDigitalClock() {
 
 function exportDataCSV() {
     playSfx('click');
-    const headers = ['Channel ID', 'Identifier', 'MAC Address', 'Model', 'Status', 'Temperature (°C)', 'Humidity (% RH)', 'Battery (%)', 'RSSI (dBm)', 'Packets', 'Last Advert'];
+    const headers = ['Channel ID', 'Identifier', 'Zone', 'MAC Address', 'Model', 'Status', 'Temperature (°C)', 'Humidity (% RH)', 'Battery (%)', 'RSSI (dBm)', 'Packets', 'Last Advert'];
     const rows = sensorData.map(s => [
         `"CH.${s.id.toString().padStart(2, '0')}"`,
         `"${s.name}"`,
+        `"${s.zone}"`,
         s.mac,
         s.model,
         s.online ? 'Online' : 'Offline',
@@ -1571,6 +1810,13 @@ function formatTimeAgo(date) {
 // ═══════════════════════════════════════
 
 function init() {
+    loadAliases();
+
+    try {
+        const savedRadar = localStorage.getItem(STORAGE_RADAR_KEY);
+        if (savedRadar) radarSettings = { ...radarSettings, ...JSON.parse(savedRadar) };
+    } catch (e) {}
+
     const savedSound = localStorage.getItem(STORAGE_SOUND_KEY);
     if (savedSound !== null) soundEnabled = savedSound === '1';
     updateSoundUI();
