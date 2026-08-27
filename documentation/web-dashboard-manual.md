@@ -111,7 +111,7 @@ dashboard/
 การ์ดแต่ละใบประกอบด้วยองค์ประกอบระดับพรีเมียม:
 - **มุมการ์ด Hairline Brackets**: มาร์กเกอร์ HUD ที่มุมการ์ด
 - **Radial Power Gauge**: วงแหวนแสดงระดับแบตเตอรี่รอบไอคอนเซนเซอร์
-- **Comfort Tolerance Badge**: ป้ายสถานะจำแนกตามเกณฑ์ห้องแล็บ (`NOMINAL`, `CRYO`, `ELEVATED`, `HUMID`, `DRY`, `OFFLINE`)
+- **Environmental Status Badge (ENV STATUS)**: ป้ายสถานะสภาวะแวดล้อมจำแนกตามเกณฑ์ห้องแล็บ (`NOMINAL`, `CRYO`, `ELEVATED`, `HUMID`, `DRY`, `STANDBY`)
 - **Monospace Decimals**: ตัวเลขอุณหภูมิ (`°C`) และความชื้น (`%`) คมชัด
 - **Real-Time Sparkline**: กราฟเส้นแนวโน้มย้อนหลัง 18 จุดล่าสุด
 - **10-Segment Calibrated LED Scale**: แถบไฟ LED ดิจิทัล 10 ขีดตามช่วงอุณหภูมิ 20°C - 35°C
