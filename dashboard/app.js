@@ -673,7 +673,7 @@ function randomFluctuation(current, base, maxDelta, decimals = 2) {
 }
 
 function calculateComfort(temp, hum) {
-    if (temp === null || hum === null) return { text: 'STANDBY', class: 'offline' };
+    if (temp === null || isNaN(temp) || hum === null || isNaN(hum)) return { text: 'STANDBY', class: 'offline' };
     if (temp > 28.5) return { text: 'ELEVATED', class: 'warm' };
     if (temp < 25.0) return { text: 'CRYO', class: 'cool' };
     if (hum > 70) return { text: 'HUMID', class: 'humid' };
@@ -682,7 +682,7 @@ function calculateComfort(temp, hum) {
 }
 
 function calculateDewPoint(temp, hum) {
-    if (temp === null || hum === null) return '--';
+    if (temp === null || isNaN(temp) || hum === null || isNaN(hum)) return '--.--';
     const a = 17.27;
     const b = 237.7;
     const alpha = ((a * temp) / (b + temp)) + Math.log(hum / 100.0);
@@ -690,7 +690,7 @@ function calculateDewPoint(temp, hum) {
 }
 
 function calculateLedSegments(temp) {
-    if (temp === null) return { count: 0, type: 'cool' };
+    if (temp === null || isNaN(temp)) return { count: 0, type: 'cool' };
     // 20°C to 35°C mapped to 1..10
     const ratio = Math.max(0, Math.min(1, (temp - 20) / 15));
     const count = Math.max(1, Math.round(ratio * 10));
@@ -700,13 +700,17 @@ function calculateLedSegments(temp) {
 
 function calculateStats(history) {
     if (!history || history.length === 0) {
-        return { peak: '--', min: '--', avg: '--', variance: '--' };
+        return { peak: '--.--°C', min: '--.--°C', avg: '--.--°C', variance: '±--.--°C' };
     }
-    const max = Math.max(...history);
-    const min = Math.min(...history);
-    const avg = history.reduce((a, b) => a + b, 0) / history.length;
-    const sqDiffs = history.map(v => Math.pow(v - avg, 2));
-    const variance = Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / history.length);
+    const valid = history.filter(v => v !== null && !isNaN(v));
+    if (valid.length === 0) {
+        return { peak: '--.--°C', min: '--.--°C', avg: '--.--°C', variance: '±--.--°C' };
+    }
+    const max = Math.max(...valid);
+    const min = Math.min(...valid);
+    const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
+    const sqDiffs = valid.map(v => Math.pow(v - avg, 2));
+    const variance = Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / valid.length);
 
     return {
         peak: `${max.toFixed(2)}°C`,
@@ -750,16 +754,16 @@ function createLuxuryCard(sensor) {
     card.dataset.id = sensor.id;
     card.onclick = () => openModal(sensor.id);
 
-    const batVal = sensor.battery !== null ? sensor.battery : 0;
+    const batVal = (sensor.battery !== null && !isNaN(sensor.battery)) ? sensor.battery : 0;
     const batOffset = Math.max(0, 100 - batVal);
     const comfort = calculateComfort(sensor.temperature, sensor.humidity);
     const comfortClass = !sensor.online ? 'offline' : comfort.class;
     const comfortText = !sensor.online ? 'OFFLINE' : comfort.text;
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
-    const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
-    const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
+    const tempStr = (sensor.temperature !== null && !isNaN(sensor.temperature)) ? `${sensor.temperature.toFixed(2)}°C` : '--.--°C';
+    const humStr = (sensor.humidity !== null && !isNaN(sensor.humidity)) ? `${sensor.humidity.toFixed(2)}%` : '--.--%';
+    const batStr = (sensor.battery !== null && !isNaN(sensor.battery)) ? `${sensor.battery}%` : '--%';
+    const rssiStr = (sensor.rssi !== null && !isNaN(sensor.rssi)) ? `${sensor.rssi} dBm` : '-- dBm';
 
     const subtitle = `MAC: ${sensor.mac}`;
 
@@ -893,11 +897,12 @@ function renderSpatialMap() {
         node.className = 'spatial-room-node';
         node.onclick = () => openModal(sensor.id);
 
-        const hasTemp = sensor.temperature !== null;
+        const hasTemp = sensor.temperature !== null && !isNaN(sensor.temperature);
+        const hasHum = sensor.humidity !== null && !isNaN(sensor.humidity);
         const tempColor = !hasTemp ? 'rgba(100, 116, 139, 0.08)' : sensor.temperature > 28 ? 'rgba(244, 63, 94, 0.22)' : sensor.temperature < 26 ? 'rgba(0, 229, 255, 0.22)' : 'rgba(16, 185, 129, 0.22)';
 
-        const tempStr = hasTemp ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
-        const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}% RH` : '--% RH';
+        const tempStr = hasTemp ? `${sensor.temperature.toFixed(2)}°C` : '--.--°C';
+        const humStr = hasHum ? `${sensor.humidity.toFixed(2)}% RH` : '--.--% RH';
 
         node.innerHTML = `
             <div class="spatial-heat-glow" style="background: ${tempColor};"></div>
@@ -1014,10 +1019,10 @@ function renderDataTable() {
         const tr = document.createElement('tr');
         tr.onclick = () => openModal(s.id);
 
-        const tempStr = s.temperature !== null ? `${s.temperature.toFixed(2)}°C` : '--°C';
-        const humStr = s.humidity !== null ? `${s.humidity.toFixed(2)}%` : '--%';
-        const batStr = s.battery !== null ? `${s.battery}%` : '--%';
-        const rssiStr = s.rssi !== null ? `${s.rssi} dBm` : '-- dBm';
+        const tempStr = (s.temperature !== null && !isNaN(s.temperature)) ? `${s.temperature.toFixed(2)}°C` : '--.--°C';
+        const humStr = (s.humidity !== null && !isNaN(s.humidity)) ? `${s.humidity.toFixed(2)}%` : '--.--%';
+        const batStr = (s.battery !== null && !isNaN(s.battery)) ? `${s.battery}%` : '--%';
+        const rssiStr = (s.rssi !== null && !isNaN(s.rssi)) ? `${s.rssi} dBm` : '-- dBm';
         const timeStr = s.lastUpdate ? formatTimeAgo(s.lastUpdate) : '--';
 
         tr.innerHTML = `
@@ -1073,14 +1078,14 @@ function updateModalDOM(sensor) {
     document.getElementById('modal-chip-comfort').textContent = comfort.text;
     document.getElementById('modal-chip-comfort').className = `modal-chip comfort ${comfort.class}`;
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
-    const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
-    const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
+    const tempStr = (sensor.temperature !== null && !isNaN(sensor.temperature)) ? `${sensor.temperature.toFixed(2)}°C` : '--.--°C';
+    const humStr = (sensor.humidity !== null && !isNaN(sensor.humidity)) ? `${sensor.humidity.toFixed(2)}%` : '--.--%';
+    const batStr = (sensor.battery !== null && !isNaN(sensor.battery)) ? `${sensor.battery}%` : '--%';
+    const rssiStr = (sensor.rssi !== null && !isNaN(sensor.rssi)) ? `${sensor.rssi} dBm` : '-- dBm';
 
     document.getElementById('modal-sensor-name').textContent = `${sensor.name} // ${sensor.zone}`;
     document.getElementById('modal-metric-temp').textContent = tempStr;
-    document.getElementById('modal-sub-temp').textContent = dewPoint !== '--' ? `Dew Point: ${dewPoint}°C` : 'Dew Point: --';
+    document.getElementById('modal-sub-temp').textContent = (dewPoint !== '--' && dewPoint !== '--.--') ? `Dew Point: ${dewPoint}°C` : 'Dew Point: --.--';
     document.getElementById('badge-modal-temp-val').textContent = tempStr;
 
     document.getElementById('modal-metric-hum').textContent = humStr;
@@ -1578,17 +1583,17 @@ function handleMqttMessage(topic, payload) {
                 const r = data.rssi;
                 const avail = data.available;
 
-                if (t !== undefined && t !== null && !isNaN(parseFloat(t))) applyMetric(sId, 'temperature', parseFloat(t));
-                if (h !== undefined && h !== null && !isNaN(parseFloat(h))) applyMetric(sId, 'humidity', parseFloat(h));
-                if (b !== undefined && b !== null && !isNaN(parseFloat(b))) applyMetric(sId, 'battery', parseFloat(b));
-                if (r !== undefined && r !== null && !isNaN(parseFloat(r))) applyMetric(sId, 'rssi', parseFloat(r));
+                if (t !== undefined) applyMetric(sId, 'temperature', (t !== null && !isNaN(parseFloat(t))) ? parseFloat(t) : null);
+                if (h !== undefined) applyMetric(sId, 'humidity', (h !== null && !isNaN(parseFloat(h))) ? parseFloat(h) : null);
+                if (b !== undefined) applyMetric(sId, 'battery', (b !== null && !isNaN(parseFloat(b))) ? parseFloat(b) : null);
+                if (r !== undefined) applyMetric(sId, 'rssi', (r !== null && !isNaN(parseFloat(r))) ? parseFloat(r) : null);
 
                 if (avail === false) {
                     const sensor = sensorData.find(s => s.id === sId);
                     if (sensor) sensor.online = false;
                 }
 
-                addMqttLog(`CH.${sId.toString().padStart(2, '0')} [${data.protocol || 'JSON'}]: T=${t ?? '--'}°C H=${h ?? '--'}% Bat=${b ?? '--'}% RSSI=${r ?? '--'}dBm`, 'success');
+                addMqttLog(`CH.${sId.toString().padStart(2, '0')} [${data.protocol || 'JSON'}]: T=${t ?? '--.--'}°C H=${h ?? '--.--'}% Bat=${b ?? '--'}% RSSI=${r ?? '--'}dBm`, 'success');
                 return;
             }
         } catch (e) {}
@@ -1598,14 +1603,13 @@ function handleMqttMessage(topic, payload) {
     const detectedId = extractSensorId(topic);
     if (detectedId) {
         const num = parseFloat(payload);
-        if (!isNaN(num)) {
-            const lt = topic.toLowerCase();
-            if (lt.includes('temp')) applyMetric(detectedId, 'temperature', num);
-            else if (lt.includes('hum')) applyMetric(detectedId, 'humidity', num);
-            else if (lt.includes('bat')) applyMetric(detectedId, 'battery', num);
-            else if (lt.includes('rssi') || lt.includes('signal')) applyMetric(detectedId, 'rssi', num);
-            return;
-        }
+        const lt = topic.toLowerCase();
+        const val = !isNaN(num) ? num : null;
+        if (lt.includes('temp')) applyMetric(detectedId, 'temperature', val);
+        else if (lt.includes('hum')) applyMetric(detectedId, 'humidity', val);
+        else if (lt.includes('bat')) applyMetric(detectedId, 'battery', val);
+        else if (lt.includes('rssi') || lt.includes('signal')) applyMetric(detectedId, 'rssi', val);
+        return;
     }
 
     addMqttLog(`${topic}: ${payload.substring(0, 60)}`, 'data');
@@ -1646,27 +1650,31 @@ function applyMetric(sensorId, metric, value) {
     sensor.packetCount++;
     sensor.lastUpdate = new Date();
 
-    switch (metric) {
-        case 'temperature':
-            sensor.temperature = parseFloat(value.toFixed(2));
-            sensor.history.temp.push(sensor.temperature);
-            if (sensor.history.temp.length > MAX_HISTORY) sensor.history.temp.shift();
-            break;
-        case 'humidity':
-            sensor.humidity = Math.max(0, Math.min(100, parseFloat(value.toFixed(2))));
-            sensor.history.hum.push(sensor.humidity);
-            if (sensor.history.hum.length > MAX_HISTORY) sensor.history.hum.shift();
-            break;
-        case 'battery':
-            sensor.battery = Math.max(0, Math.min(100, Math.round(value)));
-            sensor.history.bat.push(sensor.battery);
-            if (sensor.history.bat.length > MAX_HISTORY) sensor.history.bat.shift();
-            break;
-        case 'rssi':
-            sensor.rssi = Math.round(value);
-            sensor.history.rssi.push(sensor.rssi);
-            if (sensor.history.rssi.length > MAX_HISTORY) sensor.history.rssi.shift();
-            break;
+    if (value === null || value === undefined || isNaN(value)) {
+        sensor[metric] = null;
+    } else {
+        switch (metric) {
+            case 'temperature':
+                sensor.temperature = parseFloat(value.toFixed(2));
+                sensor.history.temp.push(sensor.temperature);
+                if (sensor.history.temp.length > MAX_HISTORY) sensor.history.temp.shift();
+                break;
+            case 'humidity':
+                sensor.humidity = Math.max(0, Math.min(100, parseFloat(value.toFixed(2))));
+                sensor.history.hum.push(sensor.humidity);
+                if (sensor.history.hum.length > MAX_HISTORY) sensor.history.hum.shift();
+                break;
+            case 'battery':
+                sensor.battery = Math.max(0, Math.min(100, Math.round(value)));
+                sensor.history.bat.push(sensor.battery);
+                if (sensor.history.bat.length > MAX_HISTORY) sensor.history.bat.shift();
+                break;
+            case 'rssi':
+                sensor.rssi = Math.round(value);
+                sensor.history.rssi.push(sensor.rssi);
+                if (sensor.history.rssi.length > MAX_HISTORY) sensor.history.rssi.shift();
+                break;
+        }
     }
 
     updateCardDOM(sensor, prevTemp);
@@ -1779,10 +1787,10 @@ function updateCardDOM(sensor, prevTemp) {
     const gaugeBar = document.getElementById(`gauge-bar-${sensor.id}`);
     const ledBar = document.getElementById(`card-led-bar-${sensor.id}`);
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
-    const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
-    const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
+    const tempStr = (sensor.temperature !== null && !isNaN(sensor.temperature)) ? `${sensor.temperature.toFixed(2)}°C` : '--.--°C';
+    const humStr = (sensor.humidity !== null && !isNaN(sensor.humidity)) ? `${sensor.humidity.toFixed(2)}%` : '--.--%';
+    const batStr = (sensor.battery !== null && !isNaN(sensor.battery)) ? `${sensor.battery}%` : '--%';
+    const rssiStr = (sensor.rssi !== null && !isNaN(sensor.rssi)) ? `${sensor.rssi} dBm` : '-- dBm';
 
     if (tempEl) {
         tempEl.textContent = tempStr;
@@ -1797,7 +1805,7 @@ function updateCardDOM(sensor, prevTemp) {
     if (rssiEl) rssiEl.textContent = rssiStr;
 
     if (gaugeBar) {
-        const batVal = sensor.battery !== null ? sensor.battery : 0;
+        const batVal = (sensor.battery !== null && !isNaN(sensor.battery)) ? sensor.battery : 0;
         gaugeBar.style.strokeDashoffset = Math.max(0, 100 - batVal);
     }
 
@@ -1830,30 +1838,41 @@ function updateCardDOM(sensor, prevTemp) {
 }
 
 function updateHeroMetrics() {
-    const onlineSensors = sensorData.filter(s => s.online && s.temperature !== null);
+    const onlineSensors = sensorData.filter(s => s.online);
     const onlineCount = onlineSensors.length;
 
     document.getElementById('hero-online-count').textContent = onlineCount.toString().padStart(2, '0');
     document.getElementById('hero-online-pct').textContent = onlineCount > 0 ? `${Math.round((onlineCount / 10) * 100)}% NOMINAL` : '0% ACTIVE';
 
     if (onlineSensors.length > 0) {
-        const temps = onlineSensors.map(s => s.temperature);
-        const hums = onlineSensors.map(s => s.humidity);
-        const avgT = temps.reduce((a, b) => a + b, 0) / temps.length;
-        const avgH = hums.reduce((a, b) => a + b, 0) / hums.length;
-        const minT = Math.min(...temps);
-        const maxT = Math.max(...temps);
+        const validTemps = onlineSensors.map(s => s.temperature).filter(v => v !== null && !isNaN(v));
+        const validHums = onlineSensors.map(s => s.humidity).filter(v => v !== null && !isNaN(v));
 
-        document.getElementById('hero-avg-temp').textContent = avgT.toFixed(2);
-        document.getElementById('hero-avg-hum').textContent = avgH.toFixed(2);
-        document.getElementById('hero-temp-range').textContent = `MIN ${minT.toFixed(2)}° • MAX ${maxT.toFixed(2)}°`;
+        if (validTemps.length > 0) {
+            const avgT = validTemps.reduce((a, b) => a + b, 0) / validTemps.length;
+            const minT = Math.min(...validTemps);
+            const maxT = Math.max(...validTemps);
+            document.getElementById('hero-avg-temp').textContent = avgT.toFixed(2);
+            document.getElementById('hero-temp-range').textContent = `MIN ${minT.toFixed(2)}° • MAX ${maxT.toFixed(2)}°`;
+        } else {
+            document.getElementById('hero-avg-temp').textContent = '--.--';
+            document.getElementById('hero-temp-range').textContent = 'MIN --.--° • MAX --.--°';
+        }
 
-        const comfort = calculateComfort(avgT, avgH);
-        document.getElementById('hero-hum-status').textContent = `ISO-5 ${comfort.text}`;
+        if (validHums.length > 0) {
+            const avgH = validHums.reduce((a, b) => a + b, 0) / validHums.length;
+            document.getElementById('hero-avg-hum').textContent = avgH.toFixed(2);
+            const refTemp = validTemps.length > 0 ? validTemps.reduce((a, b) => a + b, 0) / validTemps.length : null;
+            const comfort = calculateComfort(refTemp, avgH);
+            document.getElementById('hero-hum-status').textContent = `ISO-5 ${comfort.text}`;
+        } else {
+            document.getElementById('hero-avg-hum').textContent = '--.--';
+            document.getElementById('hero-hum-status').textContent = 'AWAITING DATA';
+        }
     } else {
-        document.getElementById('hero-avg-temp').textContent = '--';
-        document.getElementById('hero-avg-hum').textContent = '--';
-        document.getElementById('hero-temp-range').textContent = 'MIN --° • MAX --°';
+        document.getElementById('hero-avg-temp').textContent = '--.--';
+        document.getElementById('hero-avg-hum').textContent = '--.--';
+        document.getElementById('hero-temp-range').textContent = 'MIN --.--° • MAX --.--°';
         document.getElementById('hero-hum-status').textContent = 'AWAITING DATA';
     }
 
