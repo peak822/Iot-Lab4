@@ -1,0 +1,16 @@
+# Secrets — ห้าม commit!
+esphome/secrets.yaml
+
+# ESPHome build artifacts
+esphome/.esphome/
+esphome/**/.pioenvs/
+esphome/**/.piolibdeps/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

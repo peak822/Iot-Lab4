@@ -1,0 +1,71 @@
+# ══════════════════════════════════════════════════════════
+# KC868-A6 BLE Scanner — Phase 1 Discovery
+# ══════════════════════════════════════════════════════════
+# ไฟล์แยกสำหรับ Phase 1 (BLE Discovery)
+# ใช้เพื่อค้นหาและบันทึก MAC Address ของ Mijia ทั้ง 8 ตัว
+#
+# จุดประสงค์:
+#   - สแกนอุปกรณ์ BLE รอบข้าง
+#   - ดู MAC Address ของ Mijia
+#   - ดู BLE Name (สำหรับระบุรุ่น/platform)
+#   - ดู RSSI (ความแรงสัญญาณ)
+#
+# ⚠️ ไฟล์นี้ไม่อ่านค่า Temperature/Humidity
+# ⚠️ ไม่เชื่อมต่อ MQTT
+# ⚠️ ใช้เฉพาะ Phase 1 เท่านั้น — หลังจากได้ MAC ครบแล้ว
+#     ให้เปลี่ยนไปใช้ kc868_a6_mijia.yaml แทน
+#
+# วิธีใช้:
+#   1. Flash ไฟล์นี้ลง KC868-A6
+#   2. ดู Log ผ่าน ESPHome Dashboard หรือ Serial Monitor
+#   3. เปิด Mijia ทีละตัว สังเกต MAC ที่ปรากฏ/หายไป
+#   4. บันทึก MAC + Model Name ลงตาราง (documentation/mac-address-table.md)
+# ══════════════════════════════════════════════════════════
+
+esphome:
+  name: kc868-a6-ble-scan
+  friendly_name: KC868 A6 BLE Scanner
+
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+
+# --- Logging ---
+# ใช้ VERY_VERBOSE สำหรับ Phase 1 เพื่อดู BLE advertisement ทั้งหมด
+logger:
+  level: VERY_VERBOSE
+  logs:
+    esp32_ble_tracker: DEBUG
+
+# --- Wi-Fi ---
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+
+# --- ESPHome API ---
+api:
+  encryption:
+    key: !secret encryption_key
+
+# --- OTA ---
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# --- BLE Scanner ---
+# สแกนอุปกรณ์ BLE ทั้งหมดที่อยู่รอบข้าง
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+# --- BLE Scanner Text Sensor ---
+# แสดงอุปกรณ์ BLE ที่พบใน Log
+# ดู output ผ่าน ESPHome Log เพื่อบันทึก MAC Address
+text_sensor:
+  - platform: ble_scanner
+    name: "BLE Devices Scanner"

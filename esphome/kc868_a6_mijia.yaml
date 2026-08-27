@@ -1,0 +1,101 @@
+# ══════════════════════════════════════════════════════════
+# KC868-A6 Mijia Monitor — Main Configuration
+# ══════════════════════════════════════════════════════════
+# ไฟล์หลักสำหรับ ESPHome — รวม packages ทั้งหมด:
+#   - packages/ble.yaml     → BLE Tracker (singleton)
+#   - packages/mqtt.yaml    → MQTT Broker connection
+#   - packages/sensors.yaml → Mijia sensor definitions x8
+#
+# ⚠️ ก่อนใช้งาน:
+#   1. แก้ไข secrets.yaml ให้ตรงกับ network จริง
+#   2. แก้ไข MAC Address ใน sensors.yaml ให้ตรงกับอุปกรณ์จริง
+#   3. แก้ไข platform ใน sensors.yaml ให้ตรงกับรุ่น Mijia จริง
+#   4. แก้ไข bindkey ใน sensors.yaml (จำเป็นสำหรับ LYWSD03MMC)
+# ══════════════════════════════════════════════════════════
+
+esphome:
+  name: kc868-a6-mijia
+  friendly_name: KC868 A6 Mijia Monitor
+  comment: "BLE gateway for 8 Mijia temperature/humidity sensors via MQTT"
+
+# --- ESP32 Board Configuration ---
+# KC868-A6 ใช้ ESP-WROOM-32 (ESP32 คลาสสิก)
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf
+
+# --- Logging ---
+logger:
+  level: DEBUG
+  # เปลี่ยนเป็น INFO หลังจาก debug เสร็จเพื่อลดการใช้ทรัพยากร
+
+# --- Wi-Fi ---
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Fallback AP — ใช้เชื่อมต่อเมื่อ Wi-Fi หลักล้มเหลว
+  ap:
+    ssid: "KC868-A6 Fallback"
+    password: !secret ota_password
+
+  # Power save mode: NONE เพื่อให้ Wi-Fi ทำงานเต็มประสิทธิภาพ
+  # สำคัญ: Wi-Fi กับ BLE ใช้ radio ร่วมกันบน ESP32
+  # การตั้ง power_save_mode: NONE ช่วยลดการชนกันระหว่าง Wi-Fi/BLE
+  power_save_mode: NONE
+
+# --- ESPHome API ---
+# สำหรับเชื่อมต่อกับ Home Assistant หรือ ESPHome Dashboard
+api:
+  encryption:
+    key: !secret encryption_key
+
+# --- OTA Update ---
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+# --- Captive Portal ---
+# เปิดหน้า web สำหรับตั้งค่า Wi-Fi เมื่ออยู่ในโหมด Fallback AP
+captive_portal:
+
+# --- Packages ---
+# รวม configuration จากไฟล์ย่อย
+packages:
+  ble: !include packages/ble.yaml
+  mqtt_config: !include packages/mqtt.yaml
+  sensors: !include packages/sensors.yaml
+
+# --- Status LED ---
+# แสดงสถานะการทำงานของ KC868-A6
+status_led:
+  pin:
+    number: GPIO2
+    inverted: false
+
+# --- Uptime Sensor ---
+# แสดงเวลาที่ KC868-A6 ทำงานต่อเนื่อง
+sensor:
+  - platform: uptime
+    name: "KC868-A6 Uptime"
+
+  - platform: wifi_signal
+    name: "KC868-A6 WiFi Signal"
+    update_interval: 60s
+
+# --- Text Sensors ---
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "KC868-A6 IP Address"
+    ssid:
+      name: "KC868-A6 WiFi SSID"
+    mac_address:
+      name: "KC868-A6 WiFi MAC"
+
+# --- Restart Button ---
+button:
+  - platform: restart
+    name: "KC868-A6 Restart"

@@ -1,0 +1,173 @@
+# ══════════════════════════════════════════════════════════
+# Mijia Sensor Definitions — 8 ตัว + RSSI
+# ══════════════════════════════════════════════════════════
+# ⚠️ เปลี่ยน MAC Address ให้ตรงกับอุปกรณ์จริง (ใช้ค่าจาก Phase 1 BLE Discovery)
+# ⚠️ เปลี่ยน platform ให้ตรงกับรุ่น Mijia จริง:
+#    - xiaomi_lywsdcgq    → Mijia Temperature/Humidity Sensor (จอ LCD ใหญ่ กลม)
+#    - xiaomi_lywsd03mmc  → Mijia Temperature/Humidity Monitor 2 (สี่เหลี่ยม จอเล็ก)
+#    - xiaomi_cgdk2       → Qingping Temp & RH Monitor Lite
+# ⚠️ หากรุ่นที่ใช้ต้องการ bindkey ให้เปลี่ยน bindkey ของแต่ละ entry ด้วย
+# ⚠️ ห้ามประกาศ esp32_ble_tracker: ในไฟล์นี้ (ประกาศแล้วใน ble.yaml)
+# ══════════════════════════════════════════════════════════
+
+sensor:
+  # ═══════════════════════════════════════
+  # Mijia #01
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:01"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000001"    # ⚠️ เปลี่ยนเป็น bindkey จริง (จำเป็นสำหรับ LYWSD03MMC)
+    temperature:
+      name: "Mijia 01 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 01 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 01 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #02
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:02"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000002"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 02 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 02 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 02 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #03
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:03"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000003"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 03 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 03 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 03 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #04
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:04"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000004"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 04 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 04 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 04 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #05
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:05"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000005"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 05 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 05 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 05 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #06
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:06"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000006"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 06 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 06 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 06 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #07
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:07"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000007"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 07 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 07 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 07 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #08
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:08"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000008"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 08 Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Mijia 08 Humidity"
+      accuracy_decimals: 1
+    battery_level:
+      name: "Mijia 08 Battery"
+
+  # ═══════════════════════════════════════
+  # RSSI Sensors — BLE Signal Strength
+  # ═══════════════════════════════════════
+  # RSSI ใช้สำหรับ:
+  #   - ตรวจสอบคุณภาพสัญญาณ BLE
+  #   - ทดสอบระยะ (Phase 7 — Distance Test)
+  #   - ประเมิน Online/Offline status
+  # ═══════════════════════════════════════
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:01"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #01 ด้านบน
+    name: "Mijia 01 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:02"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #02
+    name: "Mijia 02 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:03"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #03
+    name: "Mijia 03 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:04"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #04
+    name: "Mijia 04 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:05"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #05
+    name: "Mijia 05 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:06"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #06
+    name: "Mijia 06 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:07"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #07
+    name: "Mijia 07 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:08"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #08
+    name: "Mijia 08 RSSI"

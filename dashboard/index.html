@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyan">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KC868-A6 // Laboratory Telemetry Matrix</title>
+    <meta name="description" content="Precision Laboratory Environmental Monitoring & Real-time BLE Telemetry Engine">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js & MQTT.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Precision WebGL Radar Background from React Bits -->
+    <canvas id="radar-canvas" class="radar-background"></canvas>
+
+    <!-- Subtle Ambient Glow Lights -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Navigation Bar / Precision Lab Header -->
+    <!-- ════════════════════════════════════════ -->
+    <header id="main-header">
+        <div class="header-left">
+            <div class="brand-badge">
+                <div class="logo-hexagon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <div class="brand-title">
+                        KC868-A6 <span class="brand-pro font-mono">LAB-PRO</span>
+                    </div>
+                    <div class="brand-sub font-mono">FACILITY ENVIRONMENTAL TELEMETRY</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center System Summary Pills -->
+        <div class="header-center">
+            <div class="pill-stat" id="stat-pill-gateway" title="Gateway Hardware Link">
+                <span class="live-pulse green" id="pill-gateway-pulse"></span>
+                <span class="pill-label font-mono">GATEWAY:</span>
+                <span class="pill-val font-mono" id="pill-gateway-val">ONLINE</span>
+            </div>
+            <div class="pill-stat" id="stat-pill-mqtt" onclick="toggleSettings()" title="MQTT Stream Bus">
+                <span class="live-pulse grey" id="pill-mqtt-pulse"></span>
+                <span class="pill-label font-mono">STREAM:</span>
+                <span class="pill-val font-mono" id="pill-mqtt-val">DISCONNECTED</span>
+            </div>
+            <div class="pill-stat" title="System Uptime">
+                <span class="pill-label font-mono">UPTIME:</span>
+                <span class="pill-val font-mono" id="pill-uptime">0d 00h 00m</span>
+            </div>
+        </div>
+
+        <!-- Right Quick Controls -->
+        <div class="header-right">
+            <!-- Simulation Mode Toggle Button -->
+            <button class="icon-btn sim-toggle-btn" id="btn-sim-toggle" onclick="toggleSimulationMode()" title="Toggle Simulated Telemetry Feed">
+                <span class="sim-dot" id="sim-status-dot"></span>
+                <span class="font-mono" id="sim-status-text">Sim: ON</span>
+            </button>
+
+            <!-- Theme Colorway Selector -->
+            <div class="theme-dropdown-wrap">
+                <button class="icon-btn" id="btn-theme" onclick="cycleTheme()" title="Switch Laboratory Optical Palette">
+                    <span class="theme-dot current"></span>
+                    <span class="btn-text-sm font-mono" id="theme-name">Cryo Cyan</span>
+                </button>
+            </div>
+
+            <!-- Sound FX Toggle -->
+            <button class="icon-btn" id="btn-sound" onclick="toggleSound()" title="Acoustic Telemetry Feedback">
+                <svg id="icon-sound-on" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <svg id="icon-sound-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            </button>
+
+            <!-- Settings Trigger -->
+            <button class="icon-btn btn-settings-trigger" onclick="toggleSettings()" title="MQTT Stream Bus Configuration">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span class="font-mono">CONFIG</span>
+            </button>
+
+            <!-- Digital Precision Clock -->
+            <div class="digital-clock font-mono" id="digital-clock">00:00:00</div>
+        </div>
+    </header>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Hero Laboratory Telemetry Ribbon -->
+    <!-- ════════════════════════════════════════ -->
+    <div class="hero-bar">
+        <div class="hero-card">
+            <div class="hero-corner tl"></div><div class="hero-corner br"></div>
+            <div class="hero-label font-mono">ACTIVE CHANNELS</div>
+            <div class="hero-value-wrap">
+                <span class="hero-val font-mono" id="hero-online-count">08</span>
+                <span class="hero-denom font-mono">/ 08</span>
+            </div>
+            <div class="hero-sub font-mono" id="hero-online-pct">100% HEALTHY</div>
+        </div>
+
+        <div class="hero-card">
+            <div class="hero-corner tl"></div><div class="hero-corner br"></div>
+            <div class="hero-label font-mono">THERMAL MATRIX AVG</div>
+            <div class="hero-value-wrap">
+                <span class="hero-val temp-glow font-mono" id="hero-avg-temp">27.40</span>
+                <span class="hero-unit font-mono">°C</span>
+            </div>
+            <div class="hero-sub font-mono" id="hero-temp-range">MIN 26.80° • MAX 28.50°</div>
+        </div>
+
+        <div class="hero-card">
+            <div class="hero-corner tl"></div><div class="hero-corner br"></div>
+            <div class="hero-label font-mono">HYGROMETRIC AVG</div>
+            <div class="hero-value-wrap">
+                <span class="hero-val hum-glow font-mono" id="hero-avg-hum">61.5</span>
+                <span class="hero-unit font-mono">% RH</span>
+            </div>
+            <div class="hero-sub font-mono" id="hero-hum-status">ISO-5 NOMINAL</div>
+        </div>
+
+        <div class="hero-card">
+            <div class="hero-corner tl"></div><div class="hero-corner br"></div>
+            <div class="hero-label font-mono">GATEWAY RF LINK</div>
+            <div class="hero-value-wrap">
+                <span class="hero-val rssi-glow font-mono" id="hero-wifi-rssi">-42</span>
+                <span class="hero-unit font-mono">dBm</span>
+            </div>
+            <div class="hero-sub font-mono" id="hero-wifi-status">LINK STABLE</div>
+        </div>
+
+        <div class="hero-card">
+            <div class="hero-corner tl"></div><div class="hero-corner br"></div>
+            <div class="hero-label font-mono">THROUGHPUT BUFFER</div>
+            <div class="hero-value-wrap">
+                <span class="hero-val font-mono" id="hero-mqtt-packets">0</span>
+                <span class="hero-unit font-mono">MSGS</span>
+            </div>
+            <div class="hero-sub font-mono" id="hero-data-source">STANDBY</div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Main Content Container -->
+    <!-- ════════════════════════════════════════ -->
+    <main id="main-content">
+        <!-- View Navigation Header -->
+        <div class="view-header">
+            <div class="view-title-group">
+                <div class="view-micro-badge font-mono">FACILITY MATRIX // 8 CHANNELS</div>
+                <h2 class="view-main-title">Environmental Telemetry Bus</h2>
+                <p class="view-main-desc">High-precision real-time BLE payload decoding at 0.1°C thermal resolution</p>
+            </div>
+
+            <div class="view-switch-wrapper">
+                <!-- Mode Tab Buttons -->
+                <div class="view-tabs">
+                    <button class="tab-btn active font-mono" id="tab-grid" onclick="switchViewMode('grid')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                        <span>CARD GRID</span>
+                    </button>
+                    <button class="tab-btn font-mono" id="tab-map" onclick="switchViewMode('map')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                        <span>SPATIAL MATRIX</span>
+                    </button>
+                    <button class="tab-btn font-mono" id="tab-analytics" onclick="switchViewMode('analytics')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                        <span>ANALYTICS</span>
+                    </button>
+                    <button class="tab-btn font-mono" id="tab-table" onclick="switchViewMode('table')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="3" rx="1"/><rect x="3" y="10" width="18" height="3" rx="1"/><rect x="3" y="16" width="18" height="3" rx="1"/></svg>
+                        <span>DATA SHEET</span>
+                    </button>
+                </div>
+
+                <!-- Export Button -->
+                <button class="action-glow-btn font-mono" onclick="exportDataCSV()" title="Export Calibration Data to CSV">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>CSV EXPORT</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- VIEW 1: Precision Laboratory HUD Grid View -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="view-panel active" id="panel-grid">
+            <div class="sensor-luxury-grid" id="sensor-luxury-grid">
+                <!-- Precision Cards injected via JavaScript -->
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- VIEW 2: Interactive Spatial Chamber Heatmap -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="view-panel" id="panel-map">
+            <div class="floorplan-container">
+                <div class="floorplan-header">
+                    <div class="floorplan-title">
+                        <h3>Spatial Facility Chamber Matrix</h3>
+                        <p class="font-mono">Real-time Bluetooth telemetry distribution across 8 physical monitoring zones</p>
+                    </div>
+                    <div class="floorplan-legend font-mono">
+                        <div class="legend-item"><span class="legend-dot cool"></span> &lt; 26.0°C CRYO</div>
+                        <div class="legend-item"><span class="legend-dot optimal"></span> 26.0 - 28.0°C NOMINAL</div>
+                        <div class="legend-item"><span class="legend-dot warm"></span> &gt; 28.0°C ELEVATED</div>
+                    </div>
+                </div>
+
+                <div class="floorplan-canvas" id="floorplan-canvas">
+                    <!-- Dynamic Spatial Zones injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- VIEW 3: Master Analytics Spectrum Chart -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="view-panel" id="panel-analytics">
+            <div class="analytics-card">
+                <div class="analytics-top">
+                    <div>
+                        <h3>Multi-Channel Thermal Spectrum (24h)</h3>
+                        <p class="font-mono">Concurrent comparative timeline across all 8 environmental probe channels</p>
+                    </div>
+                    <div class="chart-filter-toggles" id="chart-sensor-toggles">
+                        <!-- Sensor toggle pills -->
+                    </div>
+                </div>
+                <div class="master-chart-wrapper">
+                    <canvas id="master-comparison-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- VIEW 4: Compact Data Sheet (Table View) -->
+        <!-- ════════════════════════════════════════ -->
+        <div class="view-panel" id="panel-table">
+            <div class="table-container">
+                <table class="luxury-table" id="luxury-table">
+                    <thead>
+                        <tr class="font-mono">
+                            <th>CHANNEL</th>
+                            <th>IDENTIFIER / MAC</th>
+                            <th>STATUS</th>
+                            <th>TEMPERATURE</th>
+                            <th>HUMIDITY</th>
+                            <th>TOLERANCE</th>
+                            <th>POWER</th>
+                            <th>RF SIGNAL</th>
+                            <th>PACKETS</th>
+                            <th>LAST ADVERT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Table rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Laboratory Detail Diagnostic Modal Overlay -->
+    <!-- ════════════════════════════════════════ -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal-card">
+            <button class="modal-close-btn font-mono" onclick="closeModal()">&times;</button>
+            
+            <div class="modal-top">
+                <div class="modal-icon-badge" id="modal-icon-badge">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                </div>
+                <div class="modal-title-group">
+                    <div class="modal-meta-row">
+                        <span class="modal-chip font-mono" id="modal-chip-id">NODE #01</span>
+                        <span class="modal-chip model font-mono" id="modal-chip-model">LYWSD03MMC</span>
+                        <span class="modal-chip comfort font-mono" id="modal-chip-comfort">NOMINAL</span>
+                    </div>
+                    <h2 class="font-mono" id="modal-sensor-name">NODE // 01</h2>
+                    <div class="modal-mac-address font-mono" id="modal-sensor-mac">MAC: A4:C1:38:00:00:01</div>
+                </div>
+                <div class="modal-status-badge font-mono" id="modal-status-badge">
+                    <span class="live-pulse green"></span>
+                    <span id="modal-status-text">ONLINE</span>
+                </div>
+            </div>
+
+            <!-- Big Metric Cards Row -->
+            <div class="modal-metrics-quad">
+                <div class="modal-quad-card temp">
+                    <div class="quad-label font-mono">TEMPERATURE</div>
+                    <div class="quad-val font-mono" id="modal-metric-temp">27.30°C</div>
+                    <div class="quad-sub font-mono" id="modal-sub-temp">Dew Point: 19.1°C</div>
+                </div>
+                <div class="modal-quad-card hum">
+                    <div class="quad-label font-mono">HUMIDITY</div>
+                    <div class="quad-val font-mono" id="modal-metric-hum">61.0%</div>
+                    <div class="quad-sub font-mono" id="modal-sub-hum">Vapor Pressure: 2.1 kPa</div>
+                </div>
+                <div class="modal-quad-card bat">
+                    <div class="quad-label font-mono">POWER CELL</div>
+                    <div class="quad-val font-mono" id="modal-metric-bat">94%</div>
+                    <div class="quad-sub font-mono" id="modal-sub-bat">CR2032 · 3.01V</div>
+                </div>
+                <div class="modal-quad-card rssi">
+                    <div class="quad-label font-mono">RF LINK QUALITY</div>
+                    <div class="quad-val font-mono" id="modal-metric-rssi">-52 dBm</div>
+                    <div class="quad-sub font-mono" id="modal-sub-rssi">Link Quality: 96%</div>
+                </div>
+            </div>
+
+            <!-- Modal Analytics Charts -->
+            <div class="modal-charts-grid">
+                <div class="modal-chart-box">
+                    <div class="box-head">
+                        <h4 class="font-mono">THERMAL TIMELINE (24H)</h4>
+                        <span class="box-badge temp font-mono" id="badge-modal-temp-val">27.30°C</span>
+                    </div>
+                    <div class="box-canvas-wrap">
+                        <canvas id="modal-chart-temp"></canvas>
+                    </div>
+                </div>
+                <div class="modal-chart-box">
+                    <div class="box-head">
+                        <h4 class="font-mono">HYGROMETRIC TIMELINE (24H)</h4>
+                        <span class="box-badge hum font-mono" id="badge-modal-hum-val">61.0%</span>
+                    </div>
+                    <div class="box-canvas-wrap">
+                        <canvas id="modal-chart-hum"></canvas>
+                    </div>
+                </div>
+                <div class="modal-chart-box half">
+                    <div class="box-head">
+                        <h4 class="font-mono">BLE RSSI TELEMETRY</h4>
+                        <span class="box-badge rssi font-mono" id="badge-modal-rssi-val">-52 dBm</span>
+                    </div>
+                    <div class="box-canvas-wrap">
+                        <canvas id="modal-chart-rssi"></canvas>
+                    </div>
+                </div>
+                <div class="modal-chart-box half">
+                    <div class="box-head">
+                        <h4 class="font-mono">POWER DEGRADATION</h4>
+                        <span class="box-badge bat font-mono" id="badge-modal-bat-val">94%</span>
+                    </div>
+                    <div class="box-canvas-wrap">
+                        <canvas id="modal-chart-bat"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Slide-in Settings Drawer -->
+    <!-- ════════════════════════════════════════ -->
+    <div class="settings-backdrop" id="settings-backdrop" onclick="closeSettings()"></div>
+    <aside class="settings-drawer" id="settings-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-group">
+                <h3>MQTT Gateway Configuration</h3>
+                <p class="font-mono">Configure telemetry transport pipeline</p>
+            </div>
+            <button class="drawer-close font-mono" onclick="closeSettings()">&times;</button>
+        </div>
+
+        <div class="drawer-content">
+            <!-- Connection Status Box -->
+            <div class="drawer-status-card" id="drawer-conn-card">
+                <div class="drawer-indicator idle" id="drawer-indicator"></div>
+                <div>
+                    <div class="drawer-status-title font-mono" id="drawer-status-title">MQTT Disconnected</div>
+                    <div class="drawer-status-subtitle font-mono" id="drawer-status-subtitle">Connect to receive live MQTT packets</div>
+                </div>
+            </div>
+
+            <!-- Quick Server Presets -->
+            <div class="drawer-section">
+                <label class="drawer-section-label font-mono">QUICK BROKER PRESETS</label>
+                <div class="preset-grid">
+                    <button class="drawer-preset-btn" onclick="applyPreset('localhost')">
+                        <strong>Local Mosquitto</strong>
+                        <span class="font-mono">127.0.0.1:9001 (ws)</span>
+                    </button>
+                    <button class="drawer-preset-btn" onclick="applyPreset('emqx')">
+                        <strong>Public EMQX</strong>
+                        <span class="font-mono">broker.emqx.io:8084 (wss)</span>
+                    </button>
+                    <button class="drawer-preset-btn" onclick="applyPreset('hivemq')">
+                        <strong>Public HiveMQ</strong>
+                        <span class="font-mono">broker.hivemq.com:8884 (wss)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connection Parameters -->
+            <div class="drawer-section">
+                <label class="drawer-section-label font-mono">BROKER CONNECTION</label>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="font-mono">Protocol</label>
+                        <select id="mqtt-protocol" class="luxury-input font-mono">
+                            <option value="ws">ws:// (Plain WebSocket)</option>
+                            <option value="wss">wss:// (Secure WebSocket SSL)</option>
+                        </select>
+                    </div>
+                    <div class="form-group flex-2">
+                        <label class="font-mono">Host / IP Address</label>
+                        <input type="text" id="mqtt-host" class="luxury-input font-mono" placeholder="127.0.0.1" value="127.0.0.1">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="font-mono">WS Port</label>
+                        <input type="number" id="mqtt-port" class="luxury-input font-mono" placeholder="9001" value="9001">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label class="font-mono">WS Path</label>
+                        <input type="text" id="mqtt-path" class="luxury-input font-mono" placeholder="/mqtt" value="/mqtt">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auth Parameters -->
+            <div class="drawer-section">
+                <label class="drawer-section-label font-mono">CREDENTIALS (OPTIONAL)</label>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="font-mono">Username</label>
+                        <input type="text" id="mqtt-username" class="luxury-input font-mono" placeholder="(optional)">
+                    </div>
+                    <div class="form-group flex-1">
+                        <label class="font-mono">Password</label>
+                        <input type="password" id="mqtt-password" class="luxury-input font-mono" placeholder="(optional)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topics -->
+            <div class="drawer-section">
+                <label class="drawer-section-label font-mono">TOPIC ROUTING</label>
+
+                <div class="form-group">
+                    <label class="font-mono">Topic Prefix</label>
+                    <input type="text" id="mqtt-topic-prefix" class="luxury-input font-mono" value="home/kc868-a6">
+                </div>
+
+                <div class="form-group">
+                    <label class="font-mono">Gateway Availability Topic</label>
+                    <input type="text" id="mqtt-status-topic" class="luxury-input font-mono" value="home/kc868-a6/status">
+                </div>
+
+                <div class="form-group">
+                    <label class="font-mono">Payload Decoding Mode</label>
+                    <select id="mqtt-payload-mode" class="luxury-input font-mono" onchange="togglePayloadSettings()">
+                        <option value="auto">Auto-Detect (ESPHome & JSON Payloads)</option>
+                        <option value="esphome">ESPHome Discrete Topics Only</option>
+                        <option value="json">JSON State Payload Only</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Connect Action Buttons -->
+            <div class="drawer-actions">
+                <button class="btn-luxury-primary font-mono" id="btn-connect" onclick="handleConnect()">
+                    <span>CONNECT LIVE</span>
+                </button>
+                <button class="btn-luxury-secondary font-mono" id="btn-disconnect" onclick="handleDisconnect()" disabled>
+                    <span>DISCONNECT</span>
+                </button>
+            </div>
+
+            <!-- Live MQTT Stream Log -->
+            <div class="drawer-section">
+                <div class="log-head-row">
+                    <label class="drawer-section-label font-mono">LIVE TELEMETRY LOG</label>
+                    <button class="link-btn font-mono" onclick="clearMqttLog()">Clear</button>
+                </div>
+                <div class="luxury-log-box" id="mqtt-log"></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- Ambient Bottom Status Banner (Only in Live Mode) -->
+    <!-- ════════════════════════════════════════ -->
+    <div class="luxury-status-banner" id="sim-banner" style="display:none;">
+        <div class="banner-inner">
+            <span class="banner-pulse"></span>
+            <span class="font-mono" id="banner-text">Live Telemetry Active</span>
+            <button class="banner-close font-mono" onclick="document.getElementById('sim-banner').style.display='none'">&times;</button>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>

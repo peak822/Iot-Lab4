@@ -1,0 +1,57 @@
+# ══════════════════════════════════════════════════════════
+# MQTT Configuration — KC868-A6
+# ══════════════════════════════════════════════════════════
+# MQTT Broker settings สำหรับส่งข้อมูล sensor ไปยัง Home Assistant
+#
+# Topic Structure:
+#   home/kc868-a6/mijia/{NN}/state    → sensor state (JSON)
+#   home/kc868-a6/status              → device availability
+#
+# QoS = 1:  ส่งข้อมูลอย่างน้อยหนึ่งครั้ง (at-least-once)
+# Retain = true: subscriber ใหม่จะได้รับค่าล่าสุดทันที
+#
+# ⚠️ ตั้งค่า mqtt_broker, mqtt_username, mqtt_password ใน secrets.yaml
+# ══════════════════════════════════════════════════════════
+
+mqtt:
+  broker: !secret mqtt_broker
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+
+  # --- Topic Prefix ---
+  # ESPHome จะใช้ prefix นี้สำหรับทุก topic ที่ publish
+  # เช่น home/kc868-a6/sensor/mijia_01_temperature/state
+  topic_prefix: home/kc868-a6
+
+  # --- Discovery ---
+  # เปิด MQTT Discovery เพื่อให้ Home Assistant สร้าง entities อัตโนมัติ
+  # ไม่ต้องตั้งค่า sensor ใน HA ด้วยมือ
+  discovery: true
+  discovery_retain: true
+  discovery_prefix: homeassistant
+
+  # --- Birth / Will / Shutdown Messages ---
+  # ใช้ตรวจสอบสถานะ online/offline ของ KC868-A6 เอง
+  birth_message:
+    topic: home/kc868-a6/status
+    payload: online
+    qos: 1
+    retain: true
+
+  will_message:
+    topic: home/kc868-a6/status
+    payload: offline
+    qos: 1
+    retain: true
+
+  shutdown_message:
+    topic: home/kc868-a6/status
+    payload: offline
+    qos: 1
+    retain: true
+
+  # --- Logging ---
+  # ส่ง log ผ่าน MQTT สำหรับ debug ระยะไกล (ปิดได้เมื่อใช้งานจริง)
+  log_topic:
+    topic: home/kc868-a6/debug
+    level: WARN
