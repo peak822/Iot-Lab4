@@ -1,0 +1,115 @@
+# Refer to esphome/bthome-999.yaml for complete ESPHome BTHome v2 configuration.
+# This file is placed in root as requested by user prompt.
+# ══════════════════════════════════════════════════════════
+substitutions:
+  name: "bthome-999"
+  friendly_name: "BTHome v2 Telemetry Gateway"
+  mqtt_topic_prefix: "pkru/104-106-110-119"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  comment: "BTHome v2 unencrypted telemetry gateway for 8 Mijia sensors"
+  project:
+    name: "pkru.bthome-telemetry"
+    version: "2.0.0"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+  ap:
+    ssid: "BTHome-999-Fallback"
+    password: !secret ota_password
+
+captive_portal:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "Asia/Bangkok"
+
+api:
+  encryption:
+    key: !secret encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+mqtt:
+  broker: !secret mqtt_broker
+  username: !secret mqtt_username
+  password: !secret mqtt_password
+  keepalive: 60s
+  discovery: true
+  birth_message:
+    topic: ${mqtt_topic_prefix}/status
+    payload: "online"
+    qos: 1
+    retain: true
+  will_message:
+    topic: ${mqtt_topic_prefix}/status
+    payload: "offline"
+    qos: 1
+    retain: true
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: false
+
+sensor:
+  - platform: bthome_sensor
+    mac_address: "A4:C1:38:00:00:01"
+    temperature:
+      name: "BTHome 01 Temperature"
+      id: bthome_01_temp
+      on_value:
+        then:
+          - lambda: |-
+              int dev_no = 1;
+              const char* mac_str = "A4:C1:38:00:00:01";
+              float temp = id(bthome_01_temp).state;
+              float hum = id(bthome_01_hum).state;
+              float bat = id(bthome_01_bat).state;
+              float rssi = id(bthome_01_rssi).state;
+              ESP_LOGI("BTHome", "BTHome #%02d MAC=%s RSSI=%.0f Temperature=%.2f C Humidity=%.2f %% Battery=%.0f%%",
+                       dev_no, mac_str, rssi, temp, hum, bat);
+
+              char time_str[32];
+              auto now = id(sntp_time).now();
+              if (now.is_valid()) now.strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S+0700");
+              else snprintf(time_str, sizeof(time_str), "null");
+
+              char payload[256];
+              snprintf(payload, sizeof(payload),
+                "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
+                dev_no, mac_str,
+                isnan(rssi) ? "null" : String((int)rssi).c_str(),
+                isnan(temp) ? "null" : String(temp, 1).c_str(),
+                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(bat) ? "null" : String((int)bat).c_str(),
+                time_str
+              );
+              id(mqtt_client).publish("pkru/104-106-110-119/A4:C1:38:00:00:01/data", payload, 0, false);
+    humidity:
+      name: "BTHome 01 Humidity"
+      id: bthome_01_hum
+    battery_level:
+      name: "BTHome 01 Battery"
+      id: bthome_01_bat
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:01"
+    name: "BTHome 01 RSSI"
+    id: bthome_01_rssi

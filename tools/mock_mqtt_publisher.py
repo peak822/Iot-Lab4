@@ -43,7 +43,7 @@ def main():
     parser.add_argument("--port", type=int, default=1883, help="MQTT Broker Port (default: 1883)")
     parser.add_argument("--prefix", default="home/kc868-a6", help="Topic Prefix (default: home/kc868-a6)")
     parser.add_argument("--interval", type=float, default=5.0, help="Publish interval in seconds (default: 5.0)")
-    parser.add_argument("--format", choices=["both", "esphome", "json"], default="both", help="Publish format")
+    parser.add_argument("--format", choices=["both", "esphome", "json", "bthome"], default="both", help="Publish format (both, esphome, json, bthome)")
     args = parser.parse_args()
 
     if mqtt is None:
@@ -109,7 +109,25 @@ def main():
                     })
                     client.publish(json_topic, json_payload, qos=1, retain=True)
 
-                print(f"  Mijia #{num_str}: {s['temp']}°C | {s['hum']}% | Bat {s['bat']}% | RSSI {s['rssi']} dBm")
+                # 3. BTHome v2 JSON format (pkru/104-106-110-119/<MAC>/data)
+                if args.format in ["both", "bthome"]:
+                    bthome_topic = f"pkru/104-106-110-119/{s['mac']}/data"
+                    iso_time = time.strftime("%Y-%m-%dT%H:%M:%S+0700")
+                    bthome_payload = json.dumps({
+                        "device_no": s["id"],
+                        "mac": s["mac"],
+                        "protocol": "BTHome_v2",
+                        "rssi": s["rssi"],
+                        "encrypted": False,
+                        "available": True,
+                        "temperature_c": s["temp"],
+                        "humidity_percent": s["hum"],
+                        "battery_percent": s["bat"],
+                        "datetime": iso_time
+                    })
+                    client.publish(bthome_topic, bthome_payload, qos=0, retain=False)
+
+                print(f"  Mijia #{num_str} ({s['mac']}): {s['temp']}°C | {s['hum']}% | Bat {s['bat']}% | RSSI {s['rssi']} dBm")
 
             time.sleep(args.interval)
 

@@ -1251,11 +1251,19 @@ function closeSettings() {
 
 function applyPreset(type) {
     playSfx('click');
-    if (type === 'localhost') {
+    if (type === 'pkru') {
         document.getElementById('mqtt-protocol').value = 'ws';
         document.getElementById('mqtt-host').value = '127.0.0.1';
         document.getElementById('mqtt-port').value = '9001';
         document.getElementById('mqtt-path').value = '/mqtt';
+        document.getElementById('mqtt-topic-prefix').value = 'pkru/104-106-110-119';
+        addMqttLog('Preset applied: PKRU BTHome v2 (pkru/104-106-110-119)', 'info');
+    } else if (type === 'localhost') {
+        document.getElementById('mqtt-protocol').value = 'ws';
+        document.getElementById('mqtt-host').value = '127.0.0.1';
+        document.getElementById('mqtt-port').value = '9001';
+        document.getElementById('mqtt-path').value = '/mqtt';
+        document.getElementById('mqtt-topic-prefix').value = 'home/kc868-a6';
         addMqttLog('Preset applied: Local Mosquitto (ws://127.0.0.1:9001/mqtt)', 'info');
     } else if (type === 'emqx') {
         document.getElementById('mqtt-protocol').value = 'wss';
@@ -1430,10 +1438,18 @@ function handleConnect() {
 
         buildTopicMap();
         const prefix = document.getElementById('mqtt-topic-prefix').value.trim() || 'home/kc868-a6';
-        const wildcard = `${prefix}/#`;
+        
+        // Auto-subscribe to configured prefix as well as PKRU BTHome and home topics
+        const topicsToSub = [...new Set([
+            `${prefix}/#`,
+            'pkru/104-106-110-119/#',
+            'home/kc868-a6/#'
+        ])];
 
-        mqttClient.subscribe(wildcard, { qos: 1 }, (err) => {
-            if (!err) addMqttLog(`Subscribed to wildcard: ${wildcard}`, 'success');
+        topicsToSub.forEach(t => {
+            mqttClient.subscribe(t, { qos: 1 }, (err) => {
+                if (!err) addMqttLog(`Subscribed to: ${t}`, 'success');
+            });
         });
 
         switchToLiveMode();
@@ -1481,10 +1497,11 @@ function handleMqttMessage(topic, payload) {
         isGatewayOnline = isOnline;
         document.getElementById('pill-gateway-val').textContent = isOnline ? 'ONLINE' : 'OFFLINE';
         document.getElementById('pill-gateway-pulse').className = `live-pulse ${isOnline ? 'green' : 'red'}`;
-        addMqttLog(`Gateway: ${payload}`, isOnline ? 'success' : 'warn');
+        addMqttLog(`Gateway Status: ${payload}`, isOnline ? 'success' : 'warn');
         return;
     }
 
+    // Direct discrete topic mapping
     const direct = topicToSensorMap[topic];
     if (direct) {
         const num = parseFloat(payload);
@@ -1494,20 +1511,35 @@ function handleMqttMessage(topic, payload) {
         }
     }
 
+    // JSON Payload Decoding (PKRU BTHome v2 & Generic JSON)
     if (payload.startsWith('{') && payload.endsWith('}')) {
         try {
             const data = JSON.parse(payload);
-            const sId = extractSensorId(topic);
+            const sId = extractSensorId(topic, data);
             if (sId) {
-                if (data.temperature !== undefined || data.temp !== undefined) applyMetric(sId, 'temperature', parseFloat(data.temperature ?? data.temp));
-                if (data.humidity !== undefined || data.hum !== undefined) applyMetric(sId, 'humidity', parseFloat(data.humidity ?? data.hum));
-                if (data.battery !== undefined || data.bat !== undefined) applyMetric(sId, 'battery', parseFloat(data.battery ?? data.bat));
-                if (data.rssi !== undefined) applyMetric(sId, 'rssi', parseFloat(data.rssi));
+                const t = data.temperature_c ?? data.temperature ?? data.temp;
+                const h = data.humidity_percent ?? data.humidity ?? data.hum;
+                const b = data.battery_percent ?? data.battery ?? data.bat;
+                const r = data.rssi;
+                const avail = data.available;
+
+                if (t !== undefined && t !== null && !isNaN(parseFloat(t))) applyMetric(sId, 'temperature', parseFloat(t));
+                if (h !== undefined && h !== null && !isNaN(parseFloat(h))) applyMetric(sId, 'humidity', parseFloat(h));
+                if (b !== undefined && b !== null && !isNaN(parseFloat(b))) applyMetric(sId, 'battery', parseFloat(b));
+                if (r !== undefined && r !== null && !isNaN(parseFloat(r))) applyMetric(sId, 'rssi', parseFloat(r));
+
+                if (avail === false) {
+                    const sensor = sensorData.find(s => s.id === sId);
+                    if (sensor) sensor.online = false;
+                }
+
+                addMqttLog(`CH.${sId.toString().padStart(2, '0')} [${data.protocol || 'JSON'}]: T=${t ?? '--'}°C H=${h ?? '--'}% Bat=${b ?? '--'}% RSSI=${r ?? '--'}dBm`, 'success');
                 return;
             }
         } catch (e) {}
     }
 
+    // Numeric payload fallback with regex topic matching
     const detectedId = extractSensorId(topic);
     if (detectedId) {
         const num = parseFloat(payload);
@@ -1521,11 +1553,31 @@ function handleMqttMessage(topic, payload) {
         }
     }
 
-    addMqttLog(`${topic}: ${payload.substring(0, 50)}`, 'data');
+    addMqttLog(`${topic}: ${payload.substring(0, 60)}`, 'data');
 }
 
-function extractSensorId(topic) {
-    const match = topic.match(/(?:mijia[_\-\s]*|sensor[_\-\s]*|\/)0?([1-8])(?:\/|[_\-\s]|$)/i);
+function extractSensorId(topic, data) {
+    if (data) {
+        if (data.device_no && typeof data.device_no === 'number' && data.device_no >= 1 && data.device_no <= 8) {
+            return data.device_no;
+        }
+        if (data.mac) {
+            const cleanTargetMac = data.mac.replace(/[:\-_]/g, '').toLowerCase();
+            const match = sensorData.find(s => s.mac.replace(/[:\-_]/g, '').toLowerCase() === cleanTargetMac);
+            if (match) return match.id;
+        }
+    }
+
+    // Match MAC inside topic string, e.g. pkru/104-106-110-119/A4:C1:38:00:00:01/data
+    for (const s of sensorData) {
+        const cleanMac = s.mac.replace(/[:\-_]/g, '').toLowerCase();
+        if (topic.replace(/[:\-_]/g, '').toLowerCase().includes(cleanMac)) {
+            return s.id;
+        }
+    }
+
+    // Match mijia_01, sensor_01, ch1, bthome_01
+    const match = topic.match(/(?:mijia|sensor|bthome|ch|[_\/\-])0?([1-8])(?:\/|[_\-\s]|$)/i);
     return match && match[1] ? parseInt(match[1], 10) : null;
 }
 
