@@ -1,5 +1,5 @@
 # คู่มือการใช้งาน Web Dashboard ฉบับสมบูรณ์
-## KC868-A6 8-Channel Mijia BLE Telemetry Matrix (Laboratory Precision Instrument Edition)
+## KC868-A6 10-Channel Mijia BLE Telemetry Matrix (Laboratory Precision Instrument Edition)
 
 ---
 
@@ -18,30 +18,32 @@
 
 ## 1. ภาพรวมของระบบ (System Overview)
 
-Web Dashboard นี้ถูกออกแบบและพัฒนาขึ้นภายใต้มาตรฐาน **Laboratory Precision Instrument HUD** สำหรับตรวจวัดและบันทึกข้อมูลสภาพแวดล้อมจากเซนเซอร์ **Xiaomi Mijia BLE (LYWSD03MMC)** จำนวน 8 ตัว ผ่านเกตเวย์ **KinCony KC868-A6 (ESP32)** ด้วยโพรโทคอล **MQTT over WebSocket**
+Web Dashboard นี้ถูกออกแบบและพัฒนาขึ้นภายใต้มาตรฐาน **Laboratory Precision Instrument HUD** สำหรับตรวจวัดและบันทึกข้อมูลสภาพแวดล้อมจากเซนเซอร์ **Xiaomi Mijia BLE (LYWSD03MMC)** จำนวน 10 ตัว (CH.01–CH.10) แสดงผลค่าความละเอียดจุดทศนิยม 2 ตำแหน่ง (`0.01°C` / `0.01% RH`) ผ่านเกตเวย์ **KinCony KC868-A6 (ESP32)** ด้วยโพรโทคอล **MQTT over WebSocket**
 
 ```
 ┌─────────────────────────┐
-│ 8x Mijia BLE Sensors    │ (Temperature, Humidity, Battery, RSSI)
+│ 10x Mijia BLE Sensors   │ (Temperature, Humidity, Battery, RSSI)
 └────────────┬────────────┘
              │ Bluetooth Low Energy (BLE Advertising 1100ms)
 ┌────────────▼────────────┐
 │ KinCony KC868-A6 (ESP32)│ (ESPHome Firmware)
 └────────────┬────────────┘
-             │ Wi-Fi / MQTT Topic (home/kc868-a6/#)
+             │ Wi-Fi / MQTT Topic (home/kc868-a6/# หรือ pkru/104-106-110-119/<MAC>/data)
 ┌────────────▼────────────┐
-│ MQTT Broker (Mosquitto) │ (Port 1883 TCP & Port 9001 WebSocket)
+│ MQTT Broker (Mosquitto) │ (Port 1883 TCP & Port 8080/9001 WebSocket)
 └────────────┬────────────┘
              │ WebSocket (ws:// or wss://)
 ┌────────────▼────────────┐
-│ Web Dashboard HUD       │ (WebGL Radar, Glassmorphism, 4 Views)
+│ Web Dashboard HUD       │ (WebGL Radar, Glassmorphism, 4 Views, 10 Channels)
 └─────────────────────────┘
 ```
 
 ### 💎 จุดเด่นสำคัญ:
+- **0.01°C Dual-Decimal Precision**: แสดงผลจุดทศนิยม 2 ตำแหน่งทุกมุมมอง (การ์ด, Hero Ribbon, ผังห้อง Spatial, ตาราง Data Sheet, และ Modal วิเคราะห์) ไม่สูญเสียความละเอียดของเซนเซอร์
+- **10-Channel Matrix**: รองรับ 10 แชนแนลแบบเต็มพิกัด (2 แถว x 5 คอลัมน์ บนหน้าจอเดสก์ท็อป)
 - **WebGL Radar Background**: ลำแสงเรดาร์หมุนวนตรวจจับสัญญาณสด ตอบสนองต่อการขยับเมาส์ และเปลี่ยนสีตามธีมสด ๆ
 - **Obsidian Dark Glassmorphism**: ดีไซน์กระจกฝ้าหรูหรา ตัดด้วยเส้นกริดวิศวกรรม (CAD Precision Grid) และมาร์กเกอร์มุมสี่เหลี่ยมแบบ Hairline Brackets
-- **Real-Time Responsiveness**: รองรับการถอดรหัสทั้งแบบแยก Topic ตามมาตรฐาน ESPHome และแบบ JSON Payload พร้อมไฟกระพริบวาบ (`Real-time Packet Glimmer Glow`) เมื่อได้รับแพ็กเก็ตใหม่
+- **Real-Time Responsiveness**: รองรับการถอดรหัสทั้งแบบแยก Topic ตามมาตรฐาน ESPHome และแบบ JSON Payload (BTHome v2) พร้อมไฟกระพริบวาบ (`Real-time Packet Glimmer Glow`) เมื่อได้รับแพ็กเก็ตใหม่
 - **Zero Dependencies Backend**: ทำงานได้บนเว็บเบราว์เซอร์มาตรฐานทุกตัว โดยไม่ต้องติดตั้ง Node.js หรือ Framework หนัก ๆ
 
 ---
@@ -51,7 +53,7 @@ Web Dashboard นี้ถูกออกแบบและพัฒนาขึ
 ### โครงสร้างไฟล์ Web Dashboard (`dashboard/`):
 ```
 dashboard/
-├── index.html        # โครงสร้างหน้าจอ HUD และโมดอลทั้งหมด
+├── index.html        # โครงสร้างหน้าจอ HUD และโมดอลทั้งหมด (10 ช่อง)
 ├── style.css         # สไตล์การออกแบบ Obsidian Dark, CAD Grid, แอนิเมชัน
 └── app.js            # ระบบ WebGL Radar, MQTT WebSocket, Chart.js, สถิติ
 ```
@@ -75,13 +77,13 @@ dashboard/
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ [LOGO] KC868-A6 LAB-PRO  | UPTIME | GATEWAY | MQTT | [THEME] [SFX] [SIM] │  <- Header Bar
 ├──────────────────────────────────────────────────────────────────────────┤
-│ [ACTIVE CH]   [AVG TEMP]   [AVG HUMIDITY]   [GATEWAY RF]   [THROUGHPUT]  │  <- Hero Ribbon
+│ [ACTIVE CH 10/10]   [AVG TEMP]   [AVG HUMIDITY]  [GATEWAY RF] [BUFFER]   │  <- Hero Ribbon
 ├──────────────────────────────────────────────────────────────────────────┤
-│ FACILITY MATRIX // 8 CHANNELS                                            │
+│ FACILITY MATRIX // 10 CHANNELS                                           │
 │ [CARD GRID] [SPATIAL MATRIX] [ANALYTICS] [DATA SHEET]  [Search] [Sort ▼] │  <- Toolbar
 ├──────────────────────────────────────────────────────────────────────────┤
 │                                                                          │
-│                 [ 8x Laboratory Precision Telemetry Cards ]              │  <- Main Panel
+│                 [ 10x Laboratory Precision Telemetry Cards ]             │  <- Main Panel
 │                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -99,9 +101,9 @@ dashboard/
   - ⚙️ **Config Drawer**: เปิดแถบตั้งค่า MQTT Broker และเรดาร์
 
 ### 2. แถบสถิติภาพรวม (Hero Ribbon):
-- **ACTIVE CHANNELS**: จำนวนเซนเซอร์ที่ส่งข้อมูลเข้ามาพร้อมใช้งาน (เช่น `08 / 08 ACTIVE`)
-- **THERMAL MATRIX AVG**: อุณหภูมิเฉลี่ยรวมทุกช่อง พร้อมระบุ `MIN` และ `MAX`
-- **HYGROMETRIC AVG**: ความชื้นสัมพัทธ์เฉลี่ยรวม พร้อมระบุระดับมาตรฐาน ISO Cleanroom
+- **ACTIVE CHANNELS**: จำนวนเซนเซอร์ที่ส่งข้อมูลเข้ามาพร้อมใช้งาน (เช่น `10 / 10 NOMINAL`)
+- **THERMAL MATRIX AVG**: อุณหภูมิเฉลี่ยรวมทุกช่อง (ทศนิยม 2 ตำแหน่ง) พร้อมระบุ `MIN` และ `MAX`
+- **HYGROMETRIC AVG**: ความชื้นสัมพัทธ์เฉลี่ยรวม (ทศนิยม 2 ตำแหน่ง) พร้อมระบุระดับมาตรฐาน ISO Cleanroom
 - **GATEWAY RF LINK**: ความแรงสัญญาณ Wi-Fi ของบอร์ด KC868-A6
 - **THROUGHPUT BUFFER**: จำนวนข้อความแพ็กเก็ต MQTT ทั้งหมดที่ได้รับตั้งแต่เปิดหน้าจอ
 

@@ -184,8 +184,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -233,8 +233,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -282,8 +282,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -331,8 +331,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -380,8 +380,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -429,8 +429,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -478,8 +478,8 @@ sensor:
                 "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
                 dev_no, mac_str,
                 isnan(rssi) ? "null" : String((int)rssi).c_str(),
-                isnan(temp) ? "null" : String(temp, 1).c_str(),
-                isnan(hum) ? "null" : String(hum, 1).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
                 isnan(bat) ? "null" : String((int)bat).c_str(),
                 time_str
               );
@@ -495,3 +495,101 @@ sensor:
     mac_address: "A4:C1:38:00:00:08"
     name: "BTHome 08 RSSI"
     id: bthome_08_rssi
+
+  # ═════════════════════════════════════════
+  # BTHome Sensor #09 (MAC: A4:C1:38:00:00:09)
+  # ═════════════════════════════════════════
+  - platform: bthome_sensor
+    mac_address: "A4:C1:38:00:00:09"
+    temperature:
+      name: "BTHome 09 Temperature"
+      id: bthome_09_temp
+      on_value:
+        then:
+          - lambda: |-
+              int dev_no = 9;
+              const char* mac_str = "A4:C1:38:00:00:09";
+              float temp = id(bthome_09_temp).state;
+              float hum = id(bthome_09_hum).state;
+              float bat = id(bthome_09_bat).state;
+              float rssi = id(bthome_09_rssi).state;
+              
+              ESP_LOGI("BTHome", "BTHome #%02d MAC=%s RSSI=%.0f Temperature=%.2f C Humidity=%.2f %% Battery=%.0f%%",
+                       dev_no, mac_str, rssi, temp, hum, bat);
+
+              char time_str[32];
+              auto now = id(sntp_time).now();
+              if (now.is_valid()) now.strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S+0700");
+              else snprintf(time_str, sizeof(time_str), "null");
+
+              char payload[256];
+              snprintf(payload, sizeof(payload),
+                "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
+                dev_no, mac_str,
+                isnan(rssi) ? "null" : String((int)rssi).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
+                isnan(bat) ? "null" : String((int)bat).c_str(),
+                time_str
+              );
+              id(mqtt_client).publish("pkru/104-106-110-119/A4:C1:38:00:00:09/data", payload, 0, false);
+    humidity:
+      name: "BTHome 09 Humidity"
+      id: bthome_09_hum
+    battery_level:
+      name: "BTHome 09 Battery"
+      id: bthome_09_bat
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:09"
+    name: "BTHome 09 RSSI"
+    id: bthome_09_rssi
+
+  # ═════════════════════════════════════════
+  # BTHome Sensor #10 (MAC: A4:C1:38:00:00:10)
+  # ═════════════════════════════════════════
+  - platform: bthome_sensor
+    mac_address: "A4:C1:38:00:00:10"
+    temperature:
+      name: "BTHome 10 Temperature"
+      id: bthome_10_temp
+      on_value:
+        then:
+          - lambda: |-
+              int dev_no = 10;
+              const char* mac_str = "A4:C1:38:00:00:10";
+              float temp = id(bthome_10_temp).state;
+              float hum = id(bthome_10_hum).state;
+              float bat = id(bthome_10_bat).state;
+              float rssi = id(bthome_10_rssi).state;
+              
+              ESP_LOGI("BTHome", "BTHome #%02d MAC=%s RSSI=%.0f Temperature=%.2f C Humidity=%.2f %% Battery=%.0f%%",
+                       dev_no, mac_str, rssi, temp, hum, bat);
+
+              char time_str[32];
+              auto now = id(sntp_time).now();
+              if (now.is_valid()) now.strftime(time_str, sizeof(time_str), "%Y-%m-%dT%H:%M:%S+0700");
+              else snprintf(time_str, sizeof(time_str), "null");
+
+              char payload[256];
+              snprintf(payload, sizeof(payload),
+                "{\"device_no\":%d,\"mac\":\"%s\",\"protocol\":\"BTHome_v2\",\"rssi\":%s,\"encrypted\":false,\"available\":true,\"temperature_c\":%s,\"humidity_percent\":%s,\"battery_percent\":%s,\"datetime\":\"%s\"}",
+                dev_no, mac_str,
+                isnan(rssi) ? "null" : String((int)rssi).c_str(),
+                isnan(temp) ? "null" : String(temp, 2).c_str(),
+                isnan(hum) ? "null" : String(hum, 2).c_str(),
+                isnan(bat) ? "null" : String((int)bat).c_str(),
+                time_str
+              );
+              id(mqtt_client).publish("pkru/104-106-110-119/A4:C1:38:00:00:10/data", payload, 0, false);
+    humidity:
+      name: "BTHome 10 Humidity"
+      id: bthome_10_hum
+    battery_level:
+      name: "BTHome 10 Battery"
+      id: bthome_10_bat
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:10"
+    name: "BTHome 10 RSSI"
+    id: bthome_10_rssi

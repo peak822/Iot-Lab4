@@ -108,8 +108,8 @@
             <div class="hero-corner tl"></div><div class="hero-corner br"></div>
             <div class="hero-label font-mono">ACTIVE CHANNELS</div>
             <div class="hero-value-wrap">
-                <span class="hero-val font-mono" id="hero-online-count">08</span>
-                <span class="hero-denom font-mono">/ 08</span>
+                <span class="hero-val font-mono" id="hero-online-count">10</span>
+                <span class="hero-denom font-mono">/ 10</span>
             </div>
             <div class="hero-sub font-mono" id="hero-online-pct">100% HEALTHY</div>
         </div>
@@ -128,7 +128,7 @@
             <div class="hero-corner tl"></div><div class="hero-corner br"></div>
             <div class="hero-label font-mono">HYGROMETRIC AVG</div>
             <div class="hero-value-wrap">
-                <span class="hero-val hum-glow font-mono" id="hero-avg-hum">61.5</span>
+                <span class="hero-val hum-glow font-mono" id="hero-avg-hum">61.50</span>
                 <span class="hero-unit font-mono">% RH</span>
             </div>
             <div class="hero-sub font-mono" id="hero-hum-status">ISO-5 NOMINAL</div>
@@ -162,9 +162,9 @@
         <!-- View Navigation Header -->
         <div class="view-header">
             <div class="view-title-group">
-                <div class="view-micro-badge font-mono">FACILITY MATRIX // 8 CHANNELS</div>
+                <div class="view-micro-badge font-mono">FACILITY MATRIX // 10 CHANNELS</div>
                 <h2 class="view-main-title">Environmental Telemetry Bus</h2>
-                <p class="view-main-desc">High-precision real-time BLE payload decoding at 0.1°C thermal resolution</p>
+                <p class="view-main-desc">High-precision real-time BLE payload decoding at 0.01°C thermal resolution</p>
             </div>
 
             <div class="view-switch-wrapper">
@@ -195,8 +195,8 @@
                         <input type="text" id="channel-search-input" class="hud-search-input font-mono" placeholder="Search Channel / MAC..." oninput="handleSearch(this.value)">
                     </div>
                     <select id="sort-select" class="hud-select font-mono" onchange="handleSortChange(this.value)">
-                        <option value="id-asc">SORT: CH 01 → 08</option>
-                        <option value="id-desc">SORT: CH 08 → 01</option>
+                        <option value="id-asc">SORT: CH 01 → 10</option>
+                        <option value="id-desc">SORT: CH 10 → 01</option>
                         <option value="temp-desc">TEMP: HIGH → LOW</option>
                         <option value="temp-asc">TEMP: LOW → HIGH</option>
                         <option value="hum-desc">HUMIDITY: HIGH → LOW</option>
@@ -218,7 +218,7 @@
         <!-- ════════════════════════════════════════ -->
         <div class="view-panel active" id="panel-grid">
             <div class="sensor-luxury-grid" id="sensor-luxury-grid">
-                <!-- 8 Sensor HUD Cards injected by JS -->
+                <!-- 10 Sensor HUD Cards injected by JS -->
             </div>
         </div>
 
@@ -228,11 +228,11 @@
         <div class="view-panel" id="panel-map">
             <div class="spatial-floorplan-container">
                 <div class="floorplan-hud-header font-mono">
-                    <span>LABORATORY ARCHITECTURE // 8-CHAMBER MATRIX MAP</span>
+                    <span>LABORATORY ARCHITECTURE // 10-CHAMBER MATRIX MAP</span>
                     <span class="floorplan-legend"><span class="legend-dot cool"></span>CRYO &lt;26°C · <span class="legend-dot nominal"></span>NOMINAL · <span class="legend-dot warm"></span>ELEVATED &gt;28°C</span>
                 </div>
                 <div class="floorplan-canvas" id="floorplan-canvas">
-                    <!-- 8 Spatial nodes injected by JS -->
+                    <!-- 10 Spatial nodes injected by JS -->
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
                 <div class="analytics-hud-header">
                     <div>
                         <h3 class="font-mono">MULTI-CHANNEL THERMAL SPECTRUM</h3>
-                        <p class="font-mono" style="color:var(--text-muted); font-size:0.75rem">Synchronized 24-hour comparative temperature timeline across all 8 channels</p>
+                        <p class="font-mono" style="color:var(--text-muted); font-size:0.75rem">Synchronized 24-hour comparative temperature timeline across all 10 channels</p>
                     </div>
                     <div class="chart-sensor-toggles" id="chart-sensor-toggles">
                         <!-- Sensor toggle chips injected by JS -->

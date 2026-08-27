@@ -27,14 +27,16 @@ except ImportError:
     mqtt = None
 
 SENSORS = [
-    {"id": 1, "name": "mijia_01", "mac": "A4:C1:38:00:00:01", "temp": 27.3, "hum": 61.0, "bat": 94, "rssi": -52},
-    {"id": 2, "name": "mijia_02", "mac": "A4:C1:38:00:00:02", "temp": 26.8, "hum": 59.0, "bat": 88, "rssi": -55},
-    {"id": 3, "name": "mijia_03", "mac": "A4:C1:38:00:00:03", "temp": 28.1, "hum": 64.0, "bat": 91, "rssi": -48},
-    {"id": 4, "name": "mijia_04", "mac": "A4:C1:38:00:00:04", "temp": 27.7, "hum": 60.0, "bat": 85, "rssi": -61},
-    {"id": 5, "name": "mijia_05", "mac": "A4:C1:38:00:00:05", "temp": 27.0, "hum": 63.0, "bat": 90, "rssi": -57},
-    {"id": 6, "name": "mijia_06", "mac": "A4:C1:38:00:00:06", "temp": 28.5, "hum": 65.0, "bat": 77, "rssi": -63},
-    {"id": 7, "name": "mijia_07", "mac": "A4:C1:38:00:00:07", "temp": 26.9, "hum": 58.0, "bat": 79, "rssi": -50},
-    {"id": 8, "name": "mijia_08", "mac": "A4:C1:38:00:00:08", "temp": 27.8, "hum": 62.0, "bat": 81, "rssi": -58},
+    {"id": 1, "name": "mijia_01", "mac": "A4:C1:38:00:00:01", "temp": 27.30, "hum": 61.20, "bat": 94, "rssi": -52},
+    {"id": 2, "name": "mijia_02", "mac": "A4:C1:38:00:00:02", "temp": 26.85, "hum": 59.40, "bat": 88, "rssi": -55},
+    {"id": 3, "name": "mijia_03", "mac": "A4:C1:38:00:00:03", "temp": 28.10, "hum": 64.00, "bat": 91, "rssi": -48},
+    {"id": 4, "name": "mijia_04", "mac": "A4:C1:38:00:00:04", "temp": 27.75, "hum": 60.50, "bat": 85, "rssi": -61},
+    {"id": 5, "name": "mijia_05", "mac": "A4:C1:38:00:00:05", "temp": 27.05, "hum": 63.10, "bat": 90, "rssi": -57},
+    {"id": 6, "name": "mijia_06", "mac": "A4:C1:38:00:00:06", "temp": 28.50, "hum": 65.20, "bat": 77, "rssi": -63},
+    {"id": 7, "name": "mijia_07", "mac": "A4:C1:38:00:00:07", "temp": 26.90, "hum": 58.00, "bat": 79, "rssi": -50},
+    {"id": 8, "name": "mijia_08", "mac": "A4:C1:38:00:00:08", "temp": 27.80, "hum": 62.40, "bat": 81, "rssi": -58},
+    {"id": 9, "name": "mijia_09", "mac": "A4:C1:38:00:00:09", "temp": 27.15, "hum": 60.80, "bat": 89, "rssi": -54},
+    {"id": 10, "name": "mijia_10", "mac": "A4:C1:38:00:00:10", "temp": 27.60, "hum": 61.80, "bat": 92, "rssi": -56},
 ]
 
 def main():
@@ -78,8 +80,8 @@ def main():
 
             for s in SENSORS:
                 # Slight random fluctuation
-                s["temp"] = round(s["temp"] + (random.random() - 0.5) * 0.4, 1)
-                s["hum"] = round(max(20.0, min(95.0, s["hum"] + (random.random() - 0.5) * 0.8)), 1)
+                s["temp"] = round(s["temp"] + (random.random() - 0.5) * 0.4, 2)
+                s["hum"] = round(max(20.0, min(95.0, s["hum"] + (random.random() - 0.5) * 0.8)), 2)
                 s["rssi"] = int(max(-90, min(-30, s["rssi"] + random.randint(-2, 2))))
                 if random.random() < 0.05:
                     s["bat"] = max(0, s["bat"] - 1)

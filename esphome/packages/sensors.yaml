@@ -19,10 +19,10 @@ sensor:
     bindkey: "00000000000000000000000000000001"    # ⚠️ เปลี่ยนเป็น bindkey จริง (จำเป็นสำหรับ LYWSD03MMC)
     temperature:
       name: "Mijia 01 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 01 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 01 Battery"
 
@@ -34,10 +34,10 @@ sensor:
     bindkey: "00000000000000000000000000000002"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 02 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 02 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 02 Battery"
 
@@ -49,10 +49,10 @@ sensor:
     bindkey: "00000000000000000000000000000003"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 03 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 03 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 03 Battery"
 
@@ -64,10 +64,10 @@ sensor:
     bindkey: "00000000000000000000000000000004"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 04 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 04 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 04 Battery"
 
@@ -79,10 +79,10 @@ sensor:
     bindkey: "00000000000000000000000000000005"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 05 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 05 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 05 Battery"
 
@@ -94,10 +94,10 @@ sensor:
     bindkey: "00000000000000000000000000000006"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 06 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 06 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 06 Battery"
 
@@ -109,13 +109,14 @@ sensor:
     bindkey: "00000000000000000000000000000007"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 07 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 07 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 07 Battery"
 
+  # ═══════════════════════════════════════
   # ═══════════════════════════════════════
   # Mijia #08
   # ═══════════════════════════════════════
@@ -124,12 +125,42 @@ sensor:
     bindkey: "00000000000000000000000000000008"    # ⚠️ เปลี่ยนเป็น bindkey จริง
     temperature:
       name: "Mijia 08 Temperature"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     humidity:
       name: "Mijia 08 Humidity"
-      accuracy_decimals: 1
+      accuracy_decimals: 2
     battery_level:
       name: "Mijia 08 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #09
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:09"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000009"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 09 Temperature"
+      accuracy_decimals: 2
+    humidity:
+      name: "Mijia 09 Humidity"
+      accuracy_decimals: 2
+    battery_level:
+      name: "Mijia 09 Battery"
+
+  # ═══════════════════════════════════════
+  # Mijia #10
+  # ═══════════════════════════════════════
+  - platform: xiaomi_lywsd03mmc    # ⚠️ เปลี่ยนตามรุ่นจริง
+    mac_address: "A4:C1:38:00:00:10"    # ⚠️ เปลี่ยนเป็น MAC จริง
+    bindkey: "00000000000000000000000000000010"    # ⚠️ เปลี่ยนเป็น bindkey จริง
+    temperature:
+      name: "Mijia 10 Temperature"
+      accuracy_decimals: 2
+    humidity:
+      name: "Mijia 10 Humidity"
+      accuracy_decimals: 2
+    battery_level:
+      name: "Mijia 10 Battery"
 
   # ═══════════════════════════════════════
   # RSSI Sensors — BLE Signal Strength
@@ -171,3 +202,11 @@ sensor:
   - platform: ble_rssi
     mac_address: "A4:C1:38:00:00:08"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #08
     name: "Mijia 08 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:09"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #09
+    name: "Mijia 09 RSSI"
+
+  - platform: ble_rssi
+    mac_address: "A4:C1:38:00:00:10"    # ⚠️ ต้องตรงกับ MAC ของ Mijia #10
+    name: "Mijia 10 RSSI"

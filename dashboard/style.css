@@ -637,7 +637,7 @@ body::before {
    ═══════════════════════════════════════ */
 .sensor-luxury-grid, .luxury-card-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 16px;
     perspective: 1200px;
 }
@@ -940,7 +940,7 @@ body::before {
 
 .floorplan-canvas {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     grid-template-rows: repeat(2, 190px);
     gap: 12px;
     background: rgba(0, 0, 0, 0.35);
@@ -2020,9 +2020,19 @@ body::before {
 /* ═══════════════════════════════════════
    Responsive Design
    ═══════════════════════════════════════ */
-@media (max-width: 1400px) {
+@media (max-width: 1680px) {
+    .sensor-luxury-grid, .luxury-card-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1360px) {
     .sensor-luxury-grid, .luxury-card-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+    .floorplan-canvas {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: auto;
     }
 }
 
@@ -2035,7 +2045,7 @@ body::before {
     }
     .floorplan-canvas {
         grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(4, 160px);
+        grid-template-rows: auto;
     }
     .hud-filter-bar {
         width: 100%;
@@ -2062,6 +2072,10 @@ body::before {
     }
     .sensor-luxury-grid, .luxury-card-grid {
         grid-template-columns: 1fr;
+    }
+    .floorplan-canvas {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
     }
     .settings-drawer {
         width: 100%;

@@ -33,16 +33,18 @@ const SVG_ICONS = {
     rssi: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="telemetry-svg"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`
 };
 
-// 8 Sensor Definitions with Hardware Channel Identifiers
+// 10 Sensor Definitions with Hardware Channel Identifiers
 const SENSOR_CONFIG = [
-    { id: 1, defaultName: 'CHANNEL // 01', defaultZone: 'CHAMBER 01', mac: 'A4:C1:38:00:00:01', model: 'LYWSD03MMC', baseTemp: 27.3, baseHum: 61.2, baseBat: 94, baseRssi: -52, color: '#38bdf8' },
-    { id: 2, defaultName: 'CHANNEL // 02', defaultZone: 'CHAMBER 02', mac: 'A4:C1:38:00:00:02', model: 'LYWSD03MMC', baseTemp: 26.8, baseHum: 59.4, baseBat: 88, baseRssi: -55, color: '#818cf8' },
-    { id: 3, defaultName: 'CHANNEL // 03', defaultZone: 'CHAMBER 03', mac: 'A4:C1:38:00:00:03', model: 'LYWSD03MMC', baseTemp: 28.1, baseHum: 64.0, baseBat: 91, baseRssi: -48, color: '#c084fc' },
-    { id: 4, defaultName: 'CHANNEL // 04', defaultZone: 'CHAMBER 04', mac: 'A4:C1:38:00:00:04', model: 'LYWSD03MMC', baseTemp: 27.7, baseHum: 60.5, baseBat: 85, baseRssi: -61, color: '#f472b6' },
-    { id: 5, defaultName: 'CHANNEL // 05', defaultZone: 'CHAMBER 05', mac: 'A4:C1:38:00:00:05', model: 'LYWSD03MMC', baseTemp: 27.0, baseHum: 63.1, baseBat: 90, baseRssi: -57, color: '#34d399' },
-    { id: 6, defaultName: 'CHANNEL // 06', defaultZone: 'CHAMBER 06', mac: 'A4:C1:38:00:00:06', model: 'LYWSD03MMC', baseTemp: 28.5, baseHum: 65.2, baseBat: 77, baseRssi: -63, color: '#fbbf24' },
-    { id: 7, defaultName: 'CHANNEL // 07', defaultZone: 'CHAMBER 07', mac: 'A4:C1:38:00:00:07', model: 'LYWSD03MMC', baseTemp: 26.9, baseHum: 58.0, baseBat: 79, baseRssi: -50, color: '#2dd4bf' },
-    { id: 8, defaultName: 'CHANNEL // 08', defaultZone: 'CHAMBER 08', mac: 'A4:C1:38:00:00:08', model: 'LYWSD03MMC', baseTemp: 27.8, baseHum: 62.4, baseBat: 81, baseRssi: -58, color: '#fb923c' }
+    { id: 1, defaultName: 'CHANNEL // 01', defaultZone: 'CHAMBER 01', mac: 'A4:C1:38:00:00:01', model: 'LYWSD03MMC', baseTemp: 27.30, baseHum: 61.20, baseBat: 94, baseRssi: -52, color: '#38bdf8' },
+    { id: 2, defaultName: 'CHANNEL // 02', defaultZone: 'CHAMBER 02', mac: 'A4:C1:38:00:00:02', model: 'LYWSD03MMC', baseTemp: 26.85, baseHum: 59.40, baseBat: 88, baseRssi: -55, color: '#818cf8' },
+    { id: 3, defaultName: 'CHANNEL // 03', defaultZone: 'CHAMBER 03', mac: 'A4:C1:38:00:00:03', model: 'LYWSD03MMC', baseTemp: 28.10, baseHum: 64.00, baseBat: 91, baseRssi: -48, color: '#c084fc' },
+    { id: 4, defaultName: 'CHANNEL // 04', defaultZone: 'CHAMBER 04', mac: 'A4:C1:38:00:00:04', model: 'LYWSD03MMC', baseTemp: 27.75, baseHum: 60.50, baseBat: 85, baseRssi: -61, color: '#f472b6' },
+    { id: 5, defaultName: 'CHANNEL // 05', defaultZone: 'CHAMBER 05', mac: 'A4:C1:38:00:00:05', model: 'LYWSD03MMC', baseTemp: 27.05, baseHum: 63.10, baseBat: 90, baseRssi: -57, color: '#34d399' },
+    { id: 6, defaultName: 'CHANNEL // 06', defaultZone: 'CHAMBER 06', mac: 'A4:C1:38:00:00:06', model: 'LYWSD03MMC', baseTemp: 28.50, baseHum: 65.20, baseBat: 77, baseRssi: -63, color: '#fbbf24' },
+    { id: 7, defaultName: 'CHANNEL // 07', defaultZone: 'CHAMBER 07', mac: 'A4:C1:38:00:00:07', model: 'LYWSD03MMC', baseTemp: 26.90, baseHum: 58.00, baseBat: 79, baseRssi: -50, color: '#2dd4bf' },
+    { id: 8, defaultName: 'CHANNEL // 08', defaultZone: 'CHAMBER 08', mac: 'A4:C1:38:00:00:08', model: 'LYWSD03MMC', baseTemp: 27.80, baseHum: 62.40, baseBat: 81, baseRssi: -58, color: '#fb923c' },
+    { id: 9, defaultName: 'CHANNEL // 09', defaultZone: 'CHAMBER 09', mac: 'A4:C1:38:00:00:09', model: 'LYWSD03MMC', baseTemp: 27.15, baseHum: 60.80, baseBat: 89, baseRssi: -54, color: '#a78bfa' },
+    { id: 10, defaultName: 'CHANNEL // 10', defaultZone: 'CHAMBER 10', mac: 'A4:C1:38:00:00:10', model: 'LYWSD03MMC', baseTemp: 27.60, baseHum: 61.80, baseBat: 92, baseRssi: -56, color: '#06b6d4' }
 ];
 
 // App State
@@ -684,7 +686,7 @@ function calculateDewPoint(temp, hum) {
     const a = 17.27;
     const b = 237.7;
     const alpha = ((a * temp) / (b + temp)) + Math.log(hum / 100.0);
-    return ((b * alpha) / (a - alpha)).toFixed(1);
+    return ((b * alpha) / (a - alpha)).toFixed(2);
 }
 
 function calculateLedSegments(temp) {
@@ -754,8 +756,8 @@ function createLuxuryCard(sensor) {
     const comfortClass = !sensor.online ? 'offline' : comfort.class;
     const comfortText = !sensor.online ? 'OFFLINE' : comfort.text;
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(1)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(1)}%` : '--%';
+    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
+    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
     const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
     const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
 
@@ -894,8 +896,8 @@ function renderSpatialMap() {
         const hasTemp = sensor.temperature !== null;
         const tempColor = !hasTemp ? 'rgba(100, 116, 139, 0.08)' : sensor.temperature > 28 ? 'rgba(244, 63, 94, 0.22)' : sensor.temperature < 26 ? 'rgba(0, 229, 255, 0.22)' : 'rgba(16, 185, 129, 0.22)';
 
-        const tempStr = hasTemp ? `${sensor.temperature.toFixed(1)}°C` : '--°C';
-        const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(1)}% RH` : '--% RH';
+        const tempStr = hasTemp ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
+        const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}% RH` : '--% RH';
 
         node.innerHTML = `
             <div class="spatial-heat-glow" style="background: ${tempColor};"></div>
@@ -988,7 +990,7 @@ function renderMasterAnalyticsChart() {
                     ticks: {
                         color: '#64748b',
                         font: { family: 'JetBrains Mono', size: 10 },
-                        callback: v => (typeof v === 'number' ? Number(v.toFixed(1)) : v) + '°C'
+                        callback: v => (typeof v === 'number' ? Number(v.toFixed(2)) : v) + '°C'
                     }
                 }
             }
@@ -1012,8 +1014,8 @@ function renderDataTable() {
         const tr = document.createElement('tr');
         tr.onclick = () => openModal(s.id);
 
-        const tempStr = s.temperature !== null ? `${s.temperature.toFixed(1)}°C` : '--°C';
-        const humStr = s.humidity !== null ? `${s.humidity.toFixed(1)}%` : '--%';
+        const tempStr = s.temperature !== null ? `${s.temperature.toFixed(2)}°C` : '--°C';
+        const humStr = s.humidity !== null ? `${s.humidity.toFixed(2)}%` : '--%';
         const batStr = s.battery !== null ? `${s.battery}%` : '--%';
         const rssiStr = s.rssi !== null ? `${s.rssi} dBm` : '-- dBm';
         const timeStr = s.lastUpdate ? formatTimeAgo(s.lastUpdate) : '--';
@@ -1071,8 +1073,8 @@ function updateModalDOM(sensor) {
     document.getElementById('modal-chip-comfort').textContent = comfort.text;
     document.getElementById('modal-chip-comfort').className = `modal-chip comfort ${comfort.class}`;
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(1)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(1)}%` : '--%';
+    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
+    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
     const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
     const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
 
@@ -1359,7 +1361,7 @@ function cleanHost(raw) {
 function buildTopicMap() {
     const prefix = document.getElementById('mqtt-topic-prefix').value.trim() || 'home/kc868-a6';
     topicToSensorMap = {};
-    for (let i = 1; i <= 8; i++) {
+    for (let i = 1; i <= 10; i++) {
         const num2 = i.toString().padStart(2, '0');
         const num1 = i.toString();
         topicToSensorMap[`${prefix}/sensor/mijia_${num2}_temperature/state`] = { sensorId: i, metric: 'temperature' };
@@ -1611,7 +1613,7 @@ function handleMqttMessage(topic, payload) {
 
 function extractSensorId(topic, data) {
     if (data) {
-        if (data.device_no && typeof data.device_no === 'number' && data.device_no >= 1 && data.device_no <= 8) {
+        if (data.device_no && typeof data.device_no === 'number' && data.device_no >= 1 && data.device_no <= 10) {
             return data.device_no;
         }
         if (data.mac) {
@@ -1629,8 +1631,8 @@ function extractSensorId(topic, data) {
         }
     }
 
-    // Match mijia_01, sensor_01, ch1, bthome_01
-    const match = topic.match(/(?:mijia|sensor|bthome|ch|[_\/\-])0?([1-8])(?:\/|[_\-\s]|$)/i);
+    // Match mijia_01, sensor_01, ch1, bthome_01 up to 10
+    const match = topic.match(/(?:mijia|sensor|bthome|ch|[_\/\-])0?([1-9]|10)(?:\/|[_\-\s]|$)/i);
     return match && match[1] ? parseInt(match[1], 10) : null;
 }
 
@@ -1646,12 +1648,12 @@ function applyMetric(sensorId, metric, value) {
 
     switch (metric) {
         case 'temperature':
-            sensor.temperature = parseFloat(value.toFixed(1));
+            sensor.temperature = parseFloat(value.toFixed(2));
             sensor.history.temp.push(sensor.temperature);
             if (sensor.history.temp.length > MAX_HISTORY) sensor.history.temp.shift();
             break;
         case 'humidity':
-            sensor.humidity = Math.max(0, Math.min(100, parseFloat(value.toFixed(1))));
+            sensor.humidity = Math.max(0, Math.min(100, parseFloat(value.toFixed(2))));
             sensor.history.hum.push(sensor.humidity);
             if (sensor.history.hum.length > MAX_HISTORY) sensor.history.hum.shift();
             break;
@@ -1728,8 +1730,8 @@ function updateSimulationTick() {
     sensorData.forEach(sensor => {
         if (!sensor.online) return;
         const prevTemp = sensor.temperature || sensor.baseTemp;
-        sensor.temperature = randomFluctuation(sensor.temperature || sensor.baseTemp, sensor.baseTemp, 0.4, 1);
-        sensor.humidity = randomFluctuation(sensor.humidity || sensor.baseHum, sensor.baseHum, 1.0, 1);
+        sensor.temperature = randomFluctuation(sensor.temperature || sensor.baseTemp, sensor.baseTemp, 0.4, 2);
+        sensor.humidity = randomFluctuation(sensor.humidity || sensor.baseHum, sensor.baseHum, 1.0, 2);
         sensor.rssi = Math.round(randomFluctuation(sensor.rssi || sensor.baseRssi, sensor.baseRssi, 2, 0));
         if (Math.random() < 0.02 && sensor.battery) sensor.battery = Math.max(0, sensor.battery - 1);
         sensor.lastUpdate = new Date();
@@ -1777,14 +1779,14 @@ function updateCardDOM(sensor, prevTemp) {
     const gaugeBar = document.getElementById(`gauge-bar-${sensor.id}`);
     const ledBar = document.getElementById(`card-led-bar-${sensor.id}`);
 
-    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(1)}°C` : '--°C';
-    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(1)}%` : '--%';
+    const tempStr = sensor.temperature !== null ? `${sensor.temperature.toFixed(2)}°C` : '--°C';
+    const humStr = sensor.humidity !== null ? `${sensor.humidity.toFixed(2)}%` : '--%';
     const batStr = sensor.battery !== null ? `${sensor.battery}%` : '--%';
     const rssiStr = sensor.rssi !== null ? `${sensor.rssi} dBm` : '-- dBm';
 
     if (tempEl) {
         tempEl.textContent = tempStr;
-        if (prevTemp && sensor.temperature && Math.abs(sensor.temperature - prevTemp) > 0.05) {
+        if (prevTemp && sensor.temperature && Math.abs(sensor.temperature - prevTemp) > 0.02) {
             tempEl.classList.remove('value-updated');
             void tempEl.offsetWidth;
             tempEl.classList.add('value-updated');
@@ -1832,7 +1834,7 @@ function updateHeroMetrics() {
     const onlineCount = onlineSensors.length;
 
     document.getElementById('hero-online-count').textContent = onlineCount.toString().padStart(2, '0');
-    document.getElementById('hero-online-pct').textContent = onlineCount > 0 ? `${Math.round((onlineCount / 8) * 100)}% NOMINAL` : '0% ACTIVE';
+    document.getElementById('hero-online-pct').textContent = onlineCount > 0 ? `${Math.round((onlineCount / 10) * 100)}% NOMINAL` : '0% ACTIVE';
 
     if (onlineSensors.length > 0) {
         const temps = onlineSensors.map(s => s.temperature);
@@ -1843,8 +1845,8 @@ function updateHeroMetrics() {
         const maxT = Math.max(...temps);
 
         document.getElementById('hero-avg-temp').textContent = avgT.toFixed(2);
-        document.getElementById('hero-avg-hum').textContent = avgH.toFixed(1);
-        document.getElementById('hero-temp-range').textContent = `MIN ${minT.toFixed(1)}° • MAX ${maxT.toFixed(1)}°`;
+        document.getElementById('hero-avg-hum').textContent = avgH.toFixed(2);
+        document.getElementById('hero-temp-range').textContent = `MIN ${minT.toFixed(2)}° • MAX ${maxT.toFixed(2)}°`;
 
         const comfort = calculateComfort(avgT, avgH);
         document.getElementById('hero-hum-status').textContent = `ISO-5 ${comfort.text}`;
@@ -1856,12 +1858,14 @@ function updateHeroMetrics() {
     }
 
     uptimeSeconds += 5;
-    const d = Math.floor(uptimeSeconds / 86400);
-    const h = Math.floor((uptimeSeconds % 86400) / 3600);
-    const m = Math.floor((uptimeSeconds % 3600) / 60);
-    document.getElementById('pill-uptime').textContent = `${d}d ${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m`;
+    const days = Math.floor(uptimeSeconds / 86400);
+    const hours = Math.floor((uptimeSeconds % 86400) / 3600);
+    const mins = Math.floor((uptimeSeconds % 3600) / 60);
+    const uptimeEl = document.getElementById('pill-uptime');
+    if (uptimeEl) uptimeEl.textContent = `${days}d ${hours.toString().padStart(2, '0')}h ${mins.toString().padStart(2, '0')}m`;
 
-    document.getElementById('hero-mqtt-packets').textContent = mqttCount.toLocaleString();
+    const packetsEl = document.getElementById('hero-mqtt-packets');
+    if (packetsEl) packetsEl.textContent = mqttCount.toLocaleString();
 }
 
 function updateDigitalClock() {
