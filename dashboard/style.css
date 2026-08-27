@@ -789,28 +789,69 @@ body::before {
     font-weight: 700;
     padding: 3px 8px;
     border-radius: var(--radius-xs);
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--bat-color);
-    border: 1px solid rgba(16, 185, 129, 0.25);
     letter-spacing: 0.06em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.card-comfort-badge.warm {
-    background: rgba(249, 115, 22, 0.1);
-    color: var(--temp-color);
-    border-color: rgba(249, 115, 22, 0.25);
+/* 🟢 NOMINAL - Vibrant Emerald Green */
+.card-comfort-badge.optimal,
+.card-comfort-badge.nominal {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
 }
 
+/* 🔵 HUMID - Sky Ocean Blue */
+.card-comfort-badge.humid {
+    background: rgba(14, 165, 233, 0.16);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+}
+
+/* 🟠 ELEVATED - Warm Radiant Orange */
+.card-comfort-badge.warm,
+.card-comfort-badge.elevated {
+    background: rgba(249, 115, 22, 0.16);
+    color: #fb923c;
+    border: 1px solid rgba(249, 115, 22, 0.45);
+    box-shadow: 0 0 8px rgba(249, 115, 22, 0.2);
+}
+
+/* ❄️ CRYO - Glacial Ice Blue */
+.card-comfort-badge.cool,
+.card-comfort-badge.cryo {
+    background: rgba(6, 182, 212, 0.16);
+    color: #22d3ee;
+    border: 1px solid rgba(6, 182, 212, 0.45);
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.2);
+}
+
+/* 🏜️ DRY - Amber Gold */
+.card-comfort-badge.dry {
+    background: rgba(234, 179, 8, 0.16);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.45);
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.2);
+}
+
+/* ⚪ STANDBY - Slate Muted Grey */
 .card-comfort-badge.standby {
-    background: rgba(100, 116, 139, 0.1);
-    color: var(--text-muted);
-    border-color: rgba(100, 116, 139, 0.25);
+    background: rgba(100, 116, 139, 0.14);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.35);
 }
 
+/* 🔴 NO SIGNAL / OFFLINE - Alert Red */
 .card-comfort-badge.offline {
-    background: rgba(239, 68, 68, 0.1);
+    background: rgba(239, 68, 68, 0.14);
     color: #f87171;
-    border-color: rgba(239, 68, 68, 0.25);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
 }
 
 /* Metric Display in Card */
@@ -1252,21 +1293,54 @@ body::before {
 }
 
 .modal-chip.comfort {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--bat-color);
-    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.4);
 }
 
-.modal-chip.comfort.warm {
-    background: rgba(249, 115, 22, 0.1);
-    color: var(--temp-color);
-    border-color: rgba(249, 115, 22, 0.3);
+.modal-chip.comfort.optimal,
+.modal-chip.comfort.nominal {
+    background: rgba(16, 185, 129, 0.14);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.modal-chip.comfort.humid {
+    background: rgba(14, 165, 233, 0.16);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.45);
+}
+
+.modal-chip.comfort.warm,
+.modal-chip.comfort.elevated {
+    background: rgba(249, 115, 22, 0.16);
+    color: #fb923c;
+    border-color: rgba(249, 115, 22, 0.45);
+}
+
+.modal-chip.comfort.cool,
+.modal-chip.comfort.cryo {
+    background: rgba(6, 182, 212, 0.16);
+    color: #22d3ee;
+    border-color: rgba(6, 182, 212, 0.45);
+}
+
+.modal-chip.comfort.dry {
+    background: rgba(234, 179, 8, 0.16);
+    color: #facc15;
+    border-color: rgba(234, 179, 8, 0.45);
+}
+
+.modal-chip.comfort.standby {
+    background: rgba(100, 116, 139, 0.14);
+    color: #94a3b8;
+    border-color: rgba(100, 116, 139, 0.35);
 }
 
 .modal-chip.comfort.offline {
-    background: rgba(100, 116, 139, 0.1);
-    color: var(--text-muted);
-    border-color: rgba(100, 116, 139, 0.3);
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.4);
 }
 
 .modal-title-group h2 {
