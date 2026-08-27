@@ -662,9 +662,14 @@ function generateBatteryHistory(base, points) {
 function generateTimeLabels(points) {
     const labels = [];
     const now = new Date();
+    const isLive = isLiveMode || !simulationEnabled;
+    const stepSeconds = isLive ? 15 : 30;
     for (let i = points - 1; i >= 0; i--) {
-        const t = new Date(now.getTime() - i * 30 * 60000);
-        labels.push(t.getHours().toString().padStart(2, '0') + ':' + t.getMinutes().toString().padStart(2, '0'));
+        const t = new Date(now.getTime() - i * stepSeconds * 1000);
+        const hh = t.getHours().toString().padStart(2, '0');
+        const mm = t.getMinutes().toString().padStart(2, '0');
+        const ss = t.getSeconds().toString().padStart(2, '0');
+        labels.push(`${hh}:${mm}:${ss}`);
     }
     return labels;
 }
@@ -956,8 +961,9 @@ function renderMasterAnalyticsChart() {
         masterComparisonChart.destroy();
     }
 
-    const maxLen = Math.max(...sensorData.map(s => s.history.temp.length), 24);
-    const labels = generateTimeLabels(maxLen);
+    const maxDataLen = Math.max(...sensorData.map(s => s.history.temp.length), 0);
+    const activeLen = Math.max(maxDataLen, 2);
+    const labels = generateTimeLabels(activeLen);
 
     const visibleTemps = sensorData
         .filter(s => s.visibleInMasterChart && s.history.temp.length > 0)
@@ -977,12 +983,13 @@ function renderMasterAnalyticsChart() {
         const raw = s.history.temp;
         let data = [];
         if (raw.length === 0) {
-            data = Array(maxLen).fill(null);
-        } else if (raw.length < maxLen) {
-            const padCount = maxLen - raw.length;
+            data = Array(activeLen).fill(null);
+        } else if (raw.length < activeLen) {
+            // Align to right edge only if some sensors have fewer points than the longest
+            const padCount = activeLen - raw.length;
             data = [...Array(padCount).fill(null), ...raw];
         } else {
-            data = raw.slice(-maxLen);
+            data = raw.slice(-activeLen);
         }
 
         return {
@@ -1065,19 +1072,20 @@ function updateMasterChartScale() {
 
 function updateAllMasterChartDatasets() {
     if (!masterComparisonChart) return;
-    const maxLen = Math.max(...sensorData.map(s => s.history.temp.length), 24);
-    masterComparisonChart.data.labels = generateTimeLabels(maxLen);
+    const maxDataLen = Math.max(...sensorData.map(s => s.history.temp.length), 0);
+    const activeLen = Math.max(maxDataLen, 2);
+    masterComparisonChart.data.labels = generateTimeLabels(activeLen);
 
     sensorData.forEach((s, idx) => {
         const raw = s.history.temp;
         let data = [];
         if (raw.length === 0) {
-            data = Array(maxLen).fill(null);
-        } else if (raw.length < maxLen) {
-            const padCount = maxLen - raw.length;
+            data = Array(activeLen).fill(null);
+        } else if (raw.length < activeLen) {
+            const padCount = activeLen - raw.length;
             data = [...Array(padCount).fill(null), ...raw];
         } else {
-            data = raw.slice(-maxLen);
+            data = raw.slice(-activeLen);
         }
         if (masterComparisonChart.data.datasets[idx]) {
             masterComparisonChart.data.datasets[idx].data = data;
@@ -1090,28 +1098,7 @@ function updateAllMasterChartDatasets() {
 
 function updateMasterChartDataset(sensorId) {
     if (!masterComparisonChart) return;
-    const s = sensorData.find(x => x.id === sensorId);
-    if (!s) return;
-    const idx = sensorId - 1;
-    const maxLen = Math.max(...sensorData.map(x => x.history.temp.length), 24);
-    masterComparisonChart.data.labels = generateTimeLabels(maxLen);
-
-    const raw = s.history.temp;
-    let data = [];
-    if (raw.length === 0) {
-        data = Array(maxLen).fill(null);
-    } else if (raw.length < maxLen) {
-        const padCount = maxLen - raw.length;
-        data = [...Array(padCount).fill(null), ...raw];
-    } else {
-        data = raw.slice(-maxLen);
-    }
-
-    if (masterComparisonChart.data.datasets[idx]) {
-        masterComparisonChart.data.datasets[idx].data = data;
-    }
-    updateMasterChartScale();
-    masterComparisonChart.update('none');
+    updateAllMasterChartDatasets();
 }
 
 // ═══════════════════════════════════════
