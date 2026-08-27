@@ -1265,6 +1265,13 @@ function applyPreset(type) {
         document.getElementById('mqtt-path').value = '/mqtt';
         document.getElementById('mqtt-topic-prefix').value = 'home/kc868-a6';
         addMqttLog('Preset applied: Local Mosquitto (ws://127.0.0.1:9001/mqtt)', 'info');
+    } else if (type === 'mosquitto_public') {
+        document.getElementById('mqtt-protocol').value = 'ws';
+        document.getElementById('mqtt-host').value = 'test.mosquitto.org';
+        document.getElementById('mqtt-port').value = '8080';
+        document.getElementById('mqtt-path').value = '/';
+        document.getElementById('mqtt-topic-prefix').value = 'home/kc868-a6';
+        addMqttLog('Preset applied: Public Mosquitto (ws://test.mosquitto.org:8080/)', 'info');
     } else if (type === 'emqx') {
         document.getElementById('mqtt-protocol').value = 'wss';
         document.getElementById('mqtt-host').value = 'broker.emqx.io';
@@ -1381,6 +1388,8 @@ function setBrokerConnectionStatus(state, detail) {
     if (sub) sub.textContent = detail || '';
 }
 
+let connectionTimeoutTimer = null;
+
 function handleConnect() {
     if (typeof mqtt === 'undefined') {
         addMqttLog('MQTT.js not loaded. Verify internet connection.', 'error');
@@ -1388,11 +1397,11 @@ function handleConnect() {
         return;
     }
 
-    const rawHost = document.getElementById('mqtt-host').value;
-    const host = cleanHost(rawHost);
+    let rawHost = document.getElementById('mqtt-host').value;
+    let host = cleanHost(rawHost);
     document.getElementById('mqtt-host').value = host;
-    const port = document.getElementById('mqtt-port').value.trim() || '9001';
-    const protocol = document.getElementById('mqtt-protocol').value || 'ws';
+    let port = document.getElementById('mqtt-port').value.trim() || '9001';
+    let protocol = document.getElementById('mqtt-protocol').value || 'ws';
     let path = document.getElementById('mqtt-path').value.trim() || '/mqtt';
     if (!path.startsWith('/')) path = '/' + path;
 
@@ -1402,14 +1411,54 @@ function handleConnect() {
         return;
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // Intelligent Port Auto-Correction for Web Browsers:
+    // Web browsers use WebSockets, NOT raw TCP port 1883/8883.
+    // ══════════════════════════════════════════════════════════════
+    if (port === '1883' || port === '8883') {
+        if (host.includes('mosquitto.org')) {
+            port = protocol === 'wss' ? '8081' : '8080';
+            path = '/';
+            document.getElementById('mqtt-port').value = port;
+            document.getElementById('mqtt-path').value = path;
+            addMqttLog(`⚠️ Port 1883 is Raw TCP (for ESP32). Auto-switched to WebSocket port ${port} (path: /) for test.mosquitto.org`, 'warn');
+        } else if (host === '127.0.0.1' || host === 'localhost') {
+            port = '9001';
+            document.getElementById('mqtt-port').value = port;
+            addMqttLog('⚠️ Port 1883 is Raw TCP (for ESP32). Auto-switched to Mosquitto WebSocket port 9001 for Web Browser', 'warn');
+        } else if (host.includes('emqx.io')) {
+            port = protocol === 'wss' ? '8084' : '8083';
+            document.getElementById('mqtt-port').value = port;
+            addMqttLog(`⚠️ Auto-switched to EMQX WebSocket port ${port}`, 'warn');
+        } else if (host.includes('hivemq.com')) {
+            port = '8884';
+            document.getElementById('mqtt-port').value = port;
+            addMqttLog('⚠️ Auto-switched to HiveMQ WebSocket port 8884', 'warn');
+        } else {
+            addMqttLog('⚠️ Notice: Web Browsers require WebSocket port (typically 9001 or 8080), not Raw TCP port 1883.', 'warn');
+        }
+    }
+
     if (mqttClient) {
         mqttClient.end(true);
         mqttClient = null;
+    }
+    if (connectionTimeoutTimer) {
+        clearTimeout(connectionTimeoutTimer);
+        connectionTimeoutTimer = null;
     }
 
     const url = `${protocol}://${host}:${port}${path}`;
     addMqttLog(`Connecting to ${url}...`, 'info');
     setBrokerConnectionStatus('connecting', `${host}:${port}`);
+
+    // Set 6-second diagnostic timer if connection is hanging
+    connectionTimeoutTimer = setTimeout(() => {
+        if (mqttClient && !mqttClient.connected) {
+            addMqttLog(`⏳ Still connecting to ${url}...`, 'warn');
+            addMqttLog(`💡 Tip: If using test.mosquitto.org, use port 8080 (ws) or 8081 (wss). Port 1883 is for ESP32 hardware only.`, 'info');
+        }
+    }, 5000);
 
     const options = {
         clientId: 'kc868_lab_' + Math.random().toString(16).substring(2, 9),
@@ -1432,6 +1481,10 @@ function handleConnect() {
     }
 
     mqttClient.on('connect', () => {
+        if (connectionTimeoutTimer) {
+            clearTimeout(connectionTimeoutTimer);
+            connectionTimeoutTimer = null;
+        }
         addMqttLog(`Connected to Broker (${host}:${port})`, 'success');
         setBrokerConnectionStatus('connected', `${host}:${port}`);
         playSfx('connect');
