@@ -636,10 +636,14 @@ function applyTheme(theme) {
 
 function generateHistory(base, variance, points) {
     const data = [];
-    let val = base;
+    const waveFreq1 = (Math.PI * 2) / (points * 0.65);
+    const waveFreq2 = (Math.PI * 2) / (points * 0.28);
+    const phase1 = Math.random() * Math.PI * 2;
+    const phase2 = Math.random() * Math.PI * 2;
     for (let i = 0; i < points; i++) {
-        val += (Math.random() - 0.5) * variance * 0.4;
-        val = base + (val - base) * 0.95;
+        const wave = Math.sin(i * waveFreq1 + phase1) * (variance * 0.55) + Math.cos(i * waveFreq2 + phase2) * (variance * 0.30);
+        const noise = (Math.random() - 0.5) * (variance * 0.20);
+        const val = base + wave + noise;
         data.push(parseFloat(val.toFixed(2)));
     }
     return data;
@@ -668,7 +672,7 @@ function generateTimeLabels(points) {
 function randomFluctuation(current, base, maxDelta, decimals = 2) {
     const delta = (Math.random() - 0.5) * maxDelta;
     let newVal = current + delta;
-    newVal += (base - newVal) * 0.05;
+    newVal += (base - newVal) * 0.03;
     return parseFloat(newVal.toFixed(decimals));
 }
 
@@ -937,8 +941,11 @@ function renderMasterAnalyticsChart() {
             chip.onclick = () => {
                 s.visibleInMasterChart = !s.visibleInMasterChart;
                 chip.classList.toggle('active', s.visibleInMasterChart);
-                masterComparisonChart.data.datasets[idx].hidden = !s.visibleInMasterChart;
-                masterComparisonChart.update('none');
+                if (masterComparisonChart && masterComparisonChart.data.datasets[idx]) {
+                    masterComparisonChart.data.datasets[idx].hidden = !s.visibleInMasterChart;
+                    updateMasterChartScale();
+                    masterComparisonChart.update('none');
+                }
                 playSfx('click');
             };
             togglesContainer.appendChild(chip);
@@ -949,21 +956,51 @@ function renderMasterAnalyticsChart() {
         masterComparisonChart.destroy();
     }
 
-    const firstValid = sensorData.find(s => s.history.temp.length > 0);
-    const historyLen = firstValid ? firstValid.history.temp.length : 12;
-    const labels = generateTimeLabels(historyLen);
+    const maxLen = Math.max(...sensorData.map(s => s.history.temp.length), 24);
+    const labels = generateTimeLabels(maxLen);
 
-    const datasets = sensorData.map((s) => ({
-        label: `CH.${s.id} ${s.zone}`,
-        data: s.history.temp.length > 0 ? [...s.history.temp] : Array(historyLen).fill(null),
-        borderColor: s.color,
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        tension: 0.3,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        hidden: !s.visibleInMasterChart
-    }));
+    const visibleTemps = sensorData
+        .filter(s => s.visibleInMasterChart && s.history.temp.length > 0)
+        .flatMap(s => s.history.temp.filter(v => v !== null && !isNaN(v)));
+
+    let minY = undefined;
+    let maxY = undefined;
+    if (visibleTemps.length > 0) {
+        const minVal = Math.min(...visibleTemps);
+        const maxVal = Math.max(...visibleTemps);
+        const pad = Math.max(0.35, (maxVal - minVal) * 0.18);
+        minY = parseFloat((minVal - pad).toFixed(1));
+        maxY = parseFloat((maxVal + pad).toFixed(1));
+    }
+
+    const datasets = sensorData.map((s) => {
+        const raw = s.history.temp;
+        let data = [];
+        if (raw.length === 0) {
+            data = Array(maxLen).fill(null);
+        } else if (raw.length < maxLen) {
+            const padCount = maxLen - raw.length;
+            data = [...Array(padCount).fill(null), ...raw];
+        } else {
+            data = raw.slice(-maxLen);
+        }
+
+        return {
+            label: `CH.${s.id} ${s.zone}`,
+            data: data,
+            borderColor: s.color,
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            tension: 0.38,
+            pointRadius: 2.5,
+            pointHoverRadius: 6,
+            pointBackgroundColor: s.color,
+            pointBorderColor: '#080c16',
+            pointBorderWidth: 1.5,
+            spanGaps: true,
+            hidden: !s.visibleInMasterChart
+        };
+    });
 
     masterComparisonChart = new Chart(canvas, {
         type: 'line',
@@ -982,15 +1019,23 @@ function renderMasterAnalyticsChart() {
                     titleFont: { family: 'JetBrains Mono', size: 11, weight: 700 },
                     bodyFont: { family: 'JetBrains Mono', size: 11 },
                     padding: 10,
-                    cornerRadius: 4
+                    cornerRadius: 4,
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            return `${context.dataset.label}: ${val !== null && !isNaN(val) ? val.toFixed(2) + '°C' : '--.--'}`;
+                        }
+                    }
                 }
             },
             scales: {
                 x: {
                     grid: { color: 'rgba(255,255,255,0.025)' },
-                    ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 10 }
+                    ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, maxTicksLimit: 12 }
                 },
                 y: {
+                    min: minY,
+                    max: maxY,
                     grid: { color: 'rgba(255,255,255,0.025)' },
                     ticks: {
                         color: '#64748b',
@@ -1001,6 +1046,72 @@ function renderMasterAnalyticsChart() {
             }
         }
     });
+}
+
+function updateMasterChartScale() {
+    if (!masterComparisonChart) return;
+    const visibleTemps = sensorData
+        .filter(s => s.visibleInMasterChart && s.history.temp.length > 0)
+        .flatMap(s => s.history.temp.filter(v => v !== null && !isNaN(v)));
+
+    if (visibleTemps.length > 0) {
+        const minVal = Math.min(...visibleTemps);
+        const maxVal = Math.max(...visibleTemps);
+        const pad = Math.max(0.35, (maxVal - minVal) * 0.18);
+        masterComparisonChart.options.scales.y.min = parseFloat((minVal - pad).toFixed(1));
+        masterComparisonChart.options.scales.y.max = parseFloat((maxVal + pad).toFixed(1));
+    }
+}
+
+function updateAllMasterChartDatasets() {
+    if (!masterComparisonChart) return;
+    const maxLen = Math.max(...sensorData.map(s => s.history.temp.length), 24);
+    masterComparisonChart.data.labels = generateTimeLabels(maxLen);
+
+    sensorData.forEach((s, idx) => {
+        const raw = s.history.temp;
+        let data = [];
+        if (raw.length === 0) {
+            data = Array(maxLen).fill(null);
+        } else if (raw.length < maxLen) {
+            const padCount = maxLen - raw.length;
+            data = [...Array(padCount).fill(null), ...raw];
+        } else {
+            data = raw.slice(-maxLen);
+        }
+        if (masterComparisonChart.data.datasets[idx]) {
+            masterComparisonChart.data.datasets[idx].data = data;
+        }
+    });
+
+    updateMasterChartScale();
+    masterComparisonChart.update('none');
+}
+
+function updateMasterChartDataset(sensorId) {
+    if (!masterComparisonChart) return;
+    const s = sensorData.find(x => x.id === sensorId);
+    if (!s) return;
+    const idx = sensorId - 1;
+    const maxLen = Math.max(...sensorData.map(x => x.history.temp.length), 24);
+    masterComparisonChart.data.labels = generateTimeLabels(maxLen);
+
+    const raw = s.history.temp;
+    let data = [];
+    if (raw.length === 0) {
+        data = Array(maxLen).fill(null);
+    } else if (raw.length < maxLen) {
+        const padCount = maxLen - raw.length;
+        data = [...Array(padCount).fill(null), ...raw];
+    } else {
+        data = raw.slice(-maxLen);
+    }
+
+    if (masterComparisonChart.data.datasets[idx]) {
+        masterComparisonChart.data.datasets[idx].data = data;
+    }
+    updateMasterChartScale();
+    masterComparisonChart.update('none');
 }
 
 // ═══════════════════════════════════════
@@ -1168,6 +1279,28 @@ function makeModalChart(canvasId, data, color, unitSuffix, extraOpts = {}) {
     const historyData = data.length > 0 ? [...data] : [0, 0];
     const labels = generateTimeLabels(historyData.length);
 
+    let yScales = {
+        grid: { color: 'rgba(255,255,255,0.025)' },
+        ticks: {
+            color: '#64748b',
+            font: { size: 9, family: 'JetBrains Mono' },
+            callback: v => (typeof v === 'number' ? Number(v.toFixed(2)) : v) + unitSuffix
+        }
+    };
+
+    if (extraOpts.scales?.y) {
+        yScales = { ...yScales, ...extraOpts.scales.y };
+    } else {
+        const validValues = historyData.filter(v => v !== null && !isNaN(v));
+        if (validValues.length > 0) {
+            const minVal = Math.min(...validValues);
+            const maxVal = Math.max(...validValues);
+            const pad = Math.max(0.3, (maxVal - minVal) * 0.2);
+            yScales.min = parseFloat((minVal - pad).toFixed(1));
+            yScales.max = parseFloat((maxVal + pad).toFixed(1));
+        }
+    }
+
     return new Chart(canvas, {
         type: 'line',
         data: {
@@ -1175,13 +1308,15 @@ function makeModalChart(canvasId, data, color, unitSuffix, extraOpts = {}) {
             datasets: [{
                 data: historyData,
                 borderColor: color,
-                backgroundColor: color.replace(')', ', 0.10)').replace('rgb', 'rgba'),
+                backgroundColor: color.replace(')', ', 0.12)').replace('rgb', 'rgba'),
                 fill: true,
-                tension: 0.3,
+                tension: 0.35,
                 borderWidth: 2,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                pointHoverBackgroundColor: color
+                pointRadius: 2.5,
+                pointHoverRadius: 5,
+                pointBackgroundColor: color,
+                pointBorderColor: '#080c16',
+                pointBorderWidth: 1.5
             }]
         },
         options: {
@@ -1206,15 +1341,7 @@ function makeModalChart(canvasId, data, color, unitSuffix, extraOpts = {}) {
                     grid: { color: 'rgba(255,255,255,0.025)' },
                     ticks: { color: '#64748b', font: { size: 9, family: 'JetBrains Mono' }, maxTicksLimit: 7 }
                 },
-                y: {
-                    grid: { color: 'rgba(255,255,255,0.025)' },
-                    ...(extraOpts.scales?.y || {}),
-                    ticks: {
-                        color: '#64748b',
-                        font: { size: 9, family: 'JetBrains Mono' },
-                        callback: v => (typeof v === 'number' ? Number(v.toFixed(1)) : v) + unitSuffix
-                    }
-                }
+                y: yScales
             }
         }
     });
@@ -1684,8 +1811,7 @@ function applyMetric(sensorId, metric, value) {
     if (currentViewMode === 'map') renderSpatialMap();
     else if (currentViewMode === 'table') renderDataTable();
     else if (currentViewMode === 'analytics' && masterComparisonChart) {
-        masterComparisonChart.data.datasets[sensorId - 1].data = [...sensor.history.temp];
-        masterComparisonChart.update('none');
+        updateMasterChartDataset(sensorId);
     }
 }
 
@@ -1767,10 +1893,7 @@ function updateSimulationTick() {
     if (currentViewMode === 'map') renderSpatialMap();
     else if (currentViewMode === 'table') renderDataTable();
     else if (currentViewMode === 'analytics' && masterComparisonChart) {
-        sensorData.forEach((s, idx) => {
-            masterComparisonChart.data.datasets[idx].data = [...s.history.temp];
-        });
-        masterComparisonChart.update('none');
+        updateAllMasterChartDatasets();
     }
 }
 
