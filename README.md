@@ -51,6 +51,7 @@ DashBoardMajin8/
 │   ├── mosquitto_sample.conf         ← คอนฟิก Mosquitto พร้อมเปิด WebSocket (Port 9001)
 │   └── mock_mqtt_publisher.py        ← สคริปต์จำลองการส่งข้อมูล MQTT เพื่อทดสอบ
 ├── documentation/
+│   ├── web-dashboard-manual.md       ← คู่มือการใช้งาน Web Dashboard ฉบับสมบูรณ์
 │   ├── architecture.md               ← สถาปัตยกรรมระบบและ Data Flow
 │   ├── mac-address-table.md          ← ตารางบันทึก MAC Address & Bindkey
 │   └── test-results.md               ← แบบฟอร์มบันทึกผลการทดสอบทุก Phase
