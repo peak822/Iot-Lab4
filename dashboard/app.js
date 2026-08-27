@@ -682,7 +682,7 @@ function randomFluctuation(current, base, maxDelta, decimals = 2) {
 }
 
 function calculateComfort(temp, hum) {
-    if (temp === null || isNaN(temp) || hum === null || isNaN(hum)) return { text: 'STANDBY', class: 'offline' };
+    if (temp === null || isNaN(temp) || hum === null || isNaN(hum)) return { text: 'STANDBY', class: 'standby' };
     if (temp > 28.5) return { text: 'ELEVATED', class: 'warm' };
     if (temp < 25.0) return { text: 'CRYO', class: 'cool' };
     if (hum > 70) return { text: 'HUMID', class: 'humid' };
@@ -766,8 +766,8 @@ function createLuxuryCard(sensor) {
     const batVal = (sensor.battery !== null && !isNaN(sensor.battery)) ? sensor.battery : 0;
     const batOffset = Math.max(0, 100 - batVal);
     const comfort = calculateComfort(sensor.temperature, sensor.humidity);
-    const comfortClass = !sensor.online ? 'offline' : comfort.class;
-    const comfortText = !sensor.online ? 'OFFLINE' : comfort.text;
+    const comfortClass = !sensor.online ? (sensor.hasReceivedRealData ? 'offline' : 'standby') : comfort.class;
+    const comfortText = !sensor.online ? (sensor.hasReceivedRealData ? 'NO SIGNAL' : 'STANDBY') : comfort.text;
 
     const tempStr = (sensor.temperature !== null && !isNaN(sensor.temperature)) ? `${sensor.temperature.toFixed(2)}°C` : '--.--°C';
     const humStr = (sensor.humidity !== null && !isNaN(sensor.humidity)) ? `${sensor.humidity.toFixed(2)}%` : '--.--%';
@@ -1123,10 +1123,16 @@ function renderDataTable() {
         const rssiStr = (s.rssi !== null && !isNaN(s.rssi)) ? `${s.rssi} dBm` : '-- dBm';
         const timeStr = s.lastUpdate ? formatTimeAgo(s.lastUpdate) : '--';
 
+        const busStateHtml = s.online
+            ? `<span class="live-pulse green"></span> <span class="font-mono" style="color:var(--bat-color)">ACTIVE</span>`
+            : s.hasReceivedRealData
+                ? `<span class="live-pulse red"></span> <span class="font-mono" style="color:#f87171">NO SIGNAL</span>`
+                : `<span class="live-pulse standby"></span> <span class="font-mono" style="color:var(--text-muted)">STANDBY</span>`;
+
         tr.innerHTML = `
             <td><strong class="font-mono" style="color:var(--accent)">CH.${s.id.toString().padStart(2, '0')}</strong></td>
             <td><strong class="font-mono">${s.name}</strong> <span class="font-mono" style="color:var(--text-muted); font-size:0.72rem">(${s.mac})</span></td>
-            <td><span class="live-pulse ${s.online ? 'green' : 'red'}"></span> <span class="font-mono">${s.online ? 'ONLINE' : 'OFFLINE'}</span></td>
+            <td>${busStateHtml}</td>
             <td><strong class="temp-glow font-mono">${tempStr}</strong></td>
             <td><strong class="hum-glow font-mono">${humStr}</strong></td>
             <td><span class="card-comfort-badge font-mono ${comfort.class}">${comfort.text}</span></td>
@@ -1209,11 +1215,17 @@ function updateModalDOM(sensor) {
 
     const statusBadge = document.getElementById('modal-status-badge');
     if (sensor.online) {
-        statusBadge.innerHTML = '<span class="live-pulse green"></span> ONLINE';
+        statusBadge.innerHTML = '<span class="live-pulse green"></span> ACTIVE';
         statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-    } else {
-        statusBadge.innerHTML = '<span class="live-pulse red"></span> OFFLINE';
+        statusBadge.style.color = 'var(--bat-color)';
+    } else if (sensor.hasReceivedRealData) {
+        statusBadge.innerHTML = '<span class="live-pulse red"></span> NO SIGNAL';
         statusBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        statusBadge.style.color = '#f87171';
+    } else {
+        statusBadge.innerHTML = '<span class="live-pulse standby"></span> STANDBY';
+        statusBadge.style.borderColor = 'rgba(100, 116, 139, 0.3)';
+        statusBadge.style.color = 'var(--text-muted)';
     }
 
     if (modalCharts.temp && sensor.history.temp.length > 0) {
@@ -1815,7 +1827,7 @@ function runSensorWatchdog() {
         if (s.online && s.lastUpdate && (now - s.lastUpdate > SENSOR_TIMEOUT_MS)) {
             s.online = false;
             changed = true;
-            addMqttLog(`CH.${s.id} timed out (> 3m) → OFFLINE`, 'warn');
+            addMqttLog(`CH.${s.id} link timed out (> 3m) → NO SIGNAL`, 'warn');
         }
     });
 
@@ -1921,8 +1933,10 @@ function updateCardDOM(sensor, prevTemp) {
 
     if (comfortEl) {
         const comfort = calculateComfort(sensor.temperature, sensor.humidity);
-        comfortEl.className = `card-comfort-badge font-mono ${!sensor.online ? 'offline' : comfort.class}`;
-        comfortEl.textContent = !sensor.online ? 'OFFLINE' : comfort.text;
+        const statusClass = !sensor.online ? (sensor.hasReceivedRealData ? 'offline' : 'standby') : comfort.class;
+        const statusText = !sensor.online ? (sensor.hasReceivedRealData ? 'NO SIGNAL' : 'STANDBY') : comfort.text;
+        comfortEl.className = `card-comfort-badge font-mono ${statusClass}`;
+        comfortEl.textContent = statusText;
     }
 
     // Update 10-Segment Range Bar

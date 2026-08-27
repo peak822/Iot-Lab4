@@ -318,8 +318,10 @@ body::before {
     box-shadow: 0 0 8px #ef4444;
 }
 
-.live-pulse.grey {
-    background: var(--text-muted);
+.live-pulse.grey,
+.live-pulse.standby {
+    background: #64748b;
+    box-shadow: 0 0 5px rgba(100, 116, 139, 0.4);
 }
 
 @keyframes pulse-ring {
@@ -799,10 +801,16 @@ body::before {
     border-color: rgba(249, 115, 22, 0.25);
 }
 
-.card-comfort-badge.offline {
+.card-comfort-badge.standby {
     background: rgba(100, 116, 139, 0.1);
     color: var(--text-muted);
     border-color: rgba(100, 116, 139, 0.25);
+}
+
+.card-comfort-badge.offline {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.25);
 }
 
 /* Metric Display in Card */
